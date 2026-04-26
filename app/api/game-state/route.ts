@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
@@ -8,7 +8,7 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
-  const session = await auth();
+  const session = await getAuth(req);
   if (session?.user?.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }

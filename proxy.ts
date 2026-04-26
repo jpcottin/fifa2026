@@ -11,6 +11,12 @@ export default auth((req) => {
   const publicPaths = ["/login", "/api/auth"];
   const isPublic = publicPaths.some((p) => pathname.startsWith(p));
 
+  // Allow mobile clients using Bearer token auth to reach API routes
+  const hasBearerToken = req.headers.get("Authorization")?.startsWith("Bearer ");
+  if (hasBearerToken && pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
   if (!isLoggedIn && !isPublic) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
