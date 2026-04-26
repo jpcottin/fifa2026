@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FIFA 2026 – Pick Your 8
 
-## Getting Started
+A World Cup 2026 prediction game. Players pick one team from each of 8 FIFA-ranking-based sets (6 teams per set, 48 teams total) and score points as their teams progress through the tournament.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, TypeScript)
+- **PostgreSQL** + **Prisma 7** (via `@prisma/adapter-pg`)
+- **Auth.js v5** with Google OAuth (JWT sessions)
+- **Tailwind CSS** + **shadcn/ui**
+- Deploy: **Heroku** + Heroku Postgres
+
+## Quick Start
+
+See [SETUP.md](./SETUP.md) for full instructions.
 
 ```bash
+npm install
+# configure .env.local (see SETUP.md)
+npx prisma migrate dev --name init
+npm run db:seed
+npm run db:seed-matches
+npm run db:seed-knockout
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Game Rules
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- 48 qualified nations split into **8 sets of 6** by April 2026 FIFA ranking
+- Each player picks **1 team per set** → 8-team combo, up to **3 selections**
+- Selections are locked when the admin starts the tournament
+- **Scoring**: Win +3 · Draw +1 · Goal +0.3 (group) · Goal +0.5 (knockout)
+- Selection score = sum of all 8 teams' individual scores
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## NPM Scripts
 
-## Learn More
+| Script | Description |
+|---|---|
+| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run db:seed` | Seed 48 teams + game state |
+| `npm run db:seed-matches` | Seed 72 group stage matches |
+| `npm run db:seed-knockout` | Seed 32 knockout matches (TBD teams) |
 
-To learn more about Next.js, take a look at the following resources:
+## Roles
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **PLAYER** (default) — sign in with Google, create selections, view leaderboard
+- **ADMIN** — enter match results, manage game state, manage users

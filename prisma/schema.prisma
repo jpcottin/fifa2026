@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String      @id @default(cuid())
+  name          String?
+  email         String      @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role        @default(PLAYER)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  selections    Selection[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Team {
+  id           String  @id @default(cuid())
+  name         String  @unique
+  set          Int
+  flagEmoji    String  @default("")
+  score        Float   @default(0)
+  team1Matches Match[] @relation("Team1Matches")
+  team2Matches Match[] @relation("Team2Matches")
+}
+
+model Selection {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  teamIds   String[]
+  score     Float    @default(0)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  team1Id    String
+  team2Id    String
+  date       DateTime?
+  phase      Phase       @default(GROUP)
+  winner     MatchResult @default(UPCOMING)
+  team1Goals Int         @default(0)
+  team2Goals Int         @default(0)
+  note       String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  team1      Team        @relation("Team1Matches", fields: [team1Id], references: [id])
+  team2      Team        @relation("Team2Matches", fields: [team2Id], references: [id])
+}
+
+model GameState {
+  id        String    @id @default("singleton")
+  state     GamePhase @default(PREPARING)
+  updatedAt DateTime  @updatedAt
+}
+
+enum Role {
+  PLAYER
+  ADMIN
+}
+
+enum Phase {
+  GROUP
+  R32
+  R16
+  QF
+  SF
+  THIRD
+  FINAL
+}
+
+enum MatchResult {
+  TEAM1
+  TEAM2
+  DRAW
+  UPCOMING
+}
+
+enum GamePhase {
+  PREPARING
+  STARTED
+}

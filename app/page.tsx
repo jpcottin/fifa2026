@@ -1,65 +1,100 @@
-import Image from "next/image";
+export const dynamic = "force-dynamic";
 
-export default function Home() {
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+export default async function HomePage() {
+  const session = await auth();
+  const gameState = await prisma.gameState.findUnique({ where: { id: "singleton" } });
+  const isPreparing = gameState?.state === "PREPARING";
+
+  const totalSelections = await prisma.selection.count();
+  const totalPlayers = await prisma.user.count({ where: { role: "PLAYER" } });
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-8">
+      <div className="text-center space-y-3">
+        <h1 className="text-4xl font-bold text-green-800">⚽ FIFA World Cup 2026</h1>
+        <p className="text-xl text-gray-600">Pick Your 8 · Follow Every Match · Win the Bragging Rights</p>
+        <Badge variant={isPreparing ? "default" : "secondary"} className="text-sm">
+          {isPreparing ? "🟢 Selections Open" : "🔴 Competition in Progress"}
+        </Badge>
+      </div>
+
+      {isPreparing && (
+        <div className="flex justify-center">
+          <Button asChild size="lg" className="bg-green-700 hover:bg-green-800">
+            <Link href="/selections/new">Pick My 8 Teams →</Link>
+          </Button>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      )}
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Players</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold text-green-700">{totalPlayers}</p></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Selections</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold text-green-700">{totalSelections}</p></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Teams</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold text-green-700">48</p></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Sets</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold text-green-700">8</p></CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>How It Works</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-gray-700">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <h3 className="font-semibold text-green-800">1. Pick Your 8 Teams</h3>
+              <p className="text-sm">
+                48 qualified nations are divided into 8 Sets of 6, ranked by the official
+                FIFA rankings of April 2026. You pick <strong>one team per set</strong> for
+                a total of 8 teams.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-green-800">2. Earn Points</h3>
+              <p className="text-sm">Each of your teams earns points throughout the tournament:</p>
+              <ul className="text-sm list-disc list-inside space-y-1">
+                <li><strong>Win</strong>: +3 pts</li>
+                <li><strong>Draw</strong>: +1 pt</li>
+                <li><strong>Goals (group stage)</strong>: +0.3 pts each</li>
+                <li><strong>Goals (knockout)</strong>: +0.5 pts each</li>
+              </ul>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-green-800">3. Your Score = Sum of Your 8 Teams</h3>
+              <p className="text-sm">The more your teams win and score, the higher you climb the leaderboard. You can create up to <strong>3 selections</strong>.</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-green-800">4. Follow Live Results</h3>
+              <p className="text-sm">Once the tournament starts, results are updated after each match. Check the leaderboard and team scores anytime.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {!session && (
+        <div className="text-center">
+          <Button asChild size="lg" variant="outline">
+            <Link href="/login">Sign in with Google to participate</Link>
+          </Button>
         </div>
-      </main>
+      )}
     </div>
   );
 }
