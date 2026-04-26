@@ -13,6 +13,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed-matches": "tsx prisma/seed-matches.ts",
     "db:seed-knockout": "tsx prisma/seed-knockout.ts",
+    "db:make-admin": "tsx prisma/make-admin.ts",
     "postinstall": "prisma generate"
   },
   "engines": {
