@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { SELECTION_DEADLINE } from "@/lib/constants";
 
 export async function GET() {
   const session = await auth();
@@ -17,6 +18,10 @@ export async function GET() {
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (new Date() >= SELECTION_DEADLINE) {
+    return NextResponse.json({ error: "The selection deadline (June 10) has passed" }, { status: 403 });
+  }
 
   const gameState = await prisma.gameState.findUnique({ where: { id: "singleton" } });
   if (gameState?.state !== "PREPARING") {

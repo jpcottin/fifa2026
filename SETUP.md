@@ -68,6 +68,7 @@ heroku config:set GOOGLE_CLIENT_SECRET="..."
 heroku config:set AUTH_SECRET="$(openssl rand -base64 32)"
 heroku config:set NEXTAUTH_URL="https://your-app-name.herokuapp.com"
 heroku config:set NODE_ENV="production"
+heroku config:set AUTH_TRUST_HOST="true"
 
 # Init git and push
 git init
@@ -78,7 +79,9 @@ git push heroku main
 
 # Run migrations and seed on Heroku
 heroku run npx prisma migrate deploy
-heroku run npm run db:seed
+heroku run "npm run db:seed"
+heroku run "npm run db:seed-matches"
+heroku run "npm run db:seed-knockout"
 ```
 
 ---
@@ -88,27 +91,25 @@ heroku run npm run db:seed
 After your first Google login, promote your account to Admin:
 
 ```bash
-# Open Prisma Studio locally (with prod DATABASE_URL)
-DATABASE_URL="..." npx prisma studio
-# → find your User row, change role from PLAYER to ADMIN
+# Local
+npm run db:make-admin your@email.com
+
+# Heroku
+heroku run "npm run db:make-admin your@email.com"
 ```
 
-Or via psql:
-```sql
-UPDATE "User" SET role = 'ADMIN' WHERE email = 'your@email.com';
-```
-
-Once you're admin, you can promote others from `/admin/users`.
+Once you're admin, you can promote others directly from the `/admin/users` page in the app.
 
 ---
 
 ## 7. Game Flow
 
-1. **PREPARING** state (default) – players can sign in and create up to 3 selections
-2. Admin creates matches from `/admin/matches/new`
+1. **PREPARING** state (default) – players sign in and create up to 3 selections (deadline: **June 10, 2026**)
+2. Selections are **final once submitted** — players cannot delete or modify them
 3. When tournament starts: Admin → Dashboard → **"Lock & Start"**
 4. As matches are played: Admin edits each match with result + goals → scores auto-recalculate
 5. Leaderboard updates live at `/leaderboard`
+6. WC group standings and match results are visible at `/wc-results`
 
 ---
 

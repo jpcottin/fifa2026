@@ -14,15 +14,8 @@ export async function DELETE(
   if (!selection) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const isAdmin = session.user.role === "ADMIN";
-  if (!isAdmin && selection.userId !== session.user.id) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
   if (!isAdmin) {
-    const gameState = await prisma.gameState.findUnique({ where: { id: "singleton" } });
-    if (gameState?.state !== "PREPARING") {
-      return NextResponse.json({ error: "Cannot delete after game has started" }, { status: 403 });
-    }
+    return NextResponse.json({ error: "Selections cannot be deleted once submitted" }, { status: 403 });
   }
 
   await prisma.selection.delete({ where: { id } });

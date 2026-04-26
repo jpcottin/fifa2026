@@ -4,10 +4,15 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { NewSelectionForm } from "@/components/NewSelectionForm";
+import { SELECTION_DEADLINE } from "@/lib/constants";
 
 export default async function NewSelectionPage() {
   const session = await auth();
   if (!session) redirect("/login");
+
+  if (new Date() >= SELECTION_DEADLINE) {
+    redirect("/leaderboard");
+  }
 
   const gameState = await prisma.gameState.findUnique({ where: { id: "singleton" } });
   if (gameState?.state !== "PREPARING") {

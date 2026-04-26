@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DeleteSelectionButton } from "@/components/DeleteSelectionButton";
 import Link from "next/link";
+import { SELECTION_DEADLINE } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ export default async function LeaderboardPage({
   const teamMap = new Map(teams.map((t) => [t.id, t]));
   const isPreparing = gameState?.state === "PREPARING";
   const isAdmin = session?.user?.role === "ADMIN";
+  const isPastDeadline = new Date() >= SELECTION_DEADLINE;
 
   let rank = 1;
   const ranked = selections.map((sel, idx) => {
@@ -58,8 +60,7 @@ export default async function LeaderboardPage({
         <div className="space-y-2">
           {ranked.map((sel) => {
             const selTeams = sel.teamIds.map((id) => teamMap.get(id)).filter(Boolean);
-            const canDelete =
-              (isPreparing && sel.userId === session?.user?.id) || isAdmin;
+            const canDelete = isAdmin;
             return (
               <div
                 key={sel.id}
@@ -96,7 +97,7 @@ export default async function LeaderboardPage({
         </div>
       )}
 
-      {isPreparing && (
+      {isPreparing && !isPastDeadline && (
         <div className="text-center pt-4">
           <Button asChild className="bg-green-700 hover:bg-green-800">
             <Link href="/selections/new">+ New Selection</Link>

@@ -22,6 +22,7 @@ const navLinks = [
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/teams", label: "Teams" },
   { href: "/matches", label: "Matches" },
+  { href: "/wc-results", label: "WC Results" },
 ];
 
 export function Navbar({ session }: NavbarProps) {

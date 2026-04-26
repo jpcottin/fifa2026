@@ -28,7 +28,8 @@ npm run dev
 
 - 48 qualified nations split into **8 sets of 6** by April 2026 FIFA ranking
 - Each player picks **1 team per set** → 8-team combo, up to **3 selections**
-- Selections are locked when the admin starts the tournament
+- Selections are **final once submitted** — they cannot be changed or deleted
+- Selections close on **June 10, 2026** and are locked when the admin starts the tournament
 - **Scoring**: Win +3 · Draw +1 · Goal +0.3 (group) · Goal +0.5 (knockout)
 - Selection score = sum of all 8 teams' individual scores
 
@@ -38,9 +39,11 @@ npm run dev
 |---|---|
 | `npm run dev` | Start dev server |
 | `npm run build` | Production build |
+| `npm test` | Run unit tests |
 | `npm run db:seed` | Seed 48 teams + game state |
 | `npm run db:seed-matches` | Seed 72 group stage matches |
 | `npm run db:seed-knockout` | Seed 32 knockout matches (TBD teams) |
+| `npm run db:make-admin <email>` | Promote a user to Admin |
 
 ## Roles
 
