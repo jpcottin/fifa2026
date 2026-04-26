@@ -2,7 +2,8 @@ import "dotenv/config";
 import { PrismaClient } from "../app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const ssl = process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false;
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL!, ssl });
 const prisma = new PrismaClient({ adapter });
 
 // Normalize names that differ between the schedule and our DB

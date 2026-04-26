@@ -3,7 +3,8 @@ import { PrismaClient } from "../app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { ALL_TEAMS } from "../lib/groups";
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const ssl = process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false;
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL!, ssl });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {

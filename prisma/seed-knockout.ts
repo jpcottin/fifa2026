@@ -3,7 +3,8 @@ import { PrismaClient } from "../app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Phase } from "../app/generated/prisma/enums";
 
-const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
+const ssl = process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false;
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL!, ssl }) });
 
 const matches: { note: string; phase: Phase; date: string }[] = [
   // Round of 32
