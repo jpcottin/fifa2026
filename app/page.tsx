@@ -7,8 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ locked?: string }>;
+}) {
   const session = await auth();
+  const params = await searchParams;
+  const showLockedNotice = params.locked === "1";
   const gameState = await prisma.gameState.findUnique({ where: { id: "singleton" } });
   const isPreparing = gameState?.state === "PREPARING";
 
@@ -17,6 +23,11 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-8">
+      {showLockedNotice && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg text-sm font-medium">
+          🔒 Selections are now locked — the competition has started. You can still follow the results on the leaderboard.
+        </div>
+      )}
       <div className="text-center space-y-3">
         <h1 className="text-4xl font-bold text-green-800">⚽ FIFA World Cup 2026</h1>
         <p className="text-xl text-gray-600">Pick Your 8 · Follow Every Match · Win the Bragging Rights</p>

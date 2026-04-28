@@ -1,2 +1,2 @@
-// Selections are locked after this date (end of June 10, 2026 UTC)
-export const SELECTION_DEADLINE = new Date("2026-06-11T00:00:00Z");
+// Selections are locked after this date (Thursday, June 11, 2026 noon PDT / 19:00 UTC)
+export const SELECTION_DEADLINE = new Date("2026-06-11T19:00:00Z");

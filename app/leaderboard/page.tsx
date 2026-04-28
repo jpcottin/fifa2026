@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DeleteSelectionButton } from "@/components/DeleteSelectionButton";
 import Link from "next/link";
 import { SELECTION_DEADLINE } from "@/lib/constants";
+import { Countdown } from "@/components/Countdown";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ export default async function LeaderboardPage({
   const isPreparing = gameState?.state === "PREPARING";
   const isAdmin = session?.user?.role === "ADMIN";
   const isPastDeadline = new Date() >= SELECTION_DEADLINE;
+  const canShowCountdown = mineOnly && isPreparing && !isPastDeadline && selections.length < 3;
 
   let rank = 1;
   const ranked = selections.map((sel, idx) => {
@@ -53,6 +55,8 @@ export default async function LeaderboardPage({
           </Button>
         </div>
       </div>
+
+      {canShowCountdown && <Countdown deadlineMs={SELECTION_DEADLINE.getTime()} />}
 
       {ranked.length === 0 ? (
         <p className="text-gray-500 text-center py-8">No selections yet.</p>
