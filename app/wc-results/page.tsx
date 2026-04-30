@@ -55,11 +55,21 @@ function buildGroupData(
   return { groupMatches, sorted };
 }
 
+const KNOCKOUT_PHASE_LABELS: Record<string, string> = {
+  R32: "Round of 32",
+  R16: "Round of 16",
+  QF: "Quarter-finals",
+  SF: "Semi-finals",
+  THIRD: "Third Place Play-off",
+  FINAL: "Final",
+};
+
+const knockoutPhaseOrder = ["R32", "R16", "QF", "SF", "THIRD", "FINAL"];
+
 export default async function WcResultsPage() {
   const [teams, matches] = await Promise.all([
     prisma.team.findMany({ where: { set: { gt: 0 } } }),
     prisma.match.findMany({
-      where: { phase: "GROUP" },
       include: { team1: true, team2: true },
       orderBy: [{ date: "asc" }, { createdAt: "asc" }],
     }),
@@ -69,15 +79,27 @@ export default async function WcResultsPage() {
     teams.map((t) => [t.name, { id: t.id, name: t.name, flagEmoji: t.flagEmoji }]),
   );
 
-  const allMatches: MatchRow[] = matches.map((m) => ({
-    id: m.id,
-    team1: { id: m.team1.id, name: m.team1.name, flagEmoji: m.team1.flagEmoji },
-    team2: { id: m.team2.id, name: m.team2.name, flagEmoji: m.team2.flagEmoji },
-    team1Goals: m.team1Goals,
-    team2Goals: m.team2Goals,
-    winner: m.winner,
-    date: m.date,
-  }));
+  const isTbd = (name: string) => name.startsWith("TBD");
+
+  const allMatches: MatchRow[] = matches
+    .filter((m) => m.phase === "GROUP")
+    .map((m) => ({
+      id: m.id,
+      team1: { id: m.team1.id, name: m.team1.name, flagEmoji: m.team1.flagEmoji },
+      team2: { id: m.team2.id, name: m.team2.name, flagEmoji: m.team2.flagEmoji },
+      team1Goals: m.team1Goals,
+      team2Goals: m.team2Goals,
+      winner: m.winner,
+      date: m.date,
+    }));
+
+  const knockoutByPhase = matches
+    .filter((m) => m.phase !== "GROUP")
+    .reduce<Record<string, typeof matches>>((acc, m) => {
+      acc[m.phase] = acc[m.phase] ?? [];
+      acc[m.phase].push(m);
+      return acc;
+    }, {});
 
   return (
     <div className="space-y-8">
@@ -209,6 +231,83 @@ export default async function WcResultsPage() {
           );
         })}
       </div>
+
+      {/* Knockout stage */}
+      {knockoutPhaseOrder.some((p) => knockoutByPhase[p]) && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold text-green-800">Knockout Stage</h2>
+          {knockoutPhaseOrder
+            .filter((p) => knockoutByPhase[p])
+            .map((phase) => (
+              <div key={phase}>
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  {KNOCKOUT_PHASE_LABELS[phase]}
+                </h3>
+                <div className="space-y-2">
+                  {knockoutByPhase[phase].map((match) => {
+                    const pending = isTbd(match.team1.name) || isTbd(match.team2.name);
+                    return (
+                      <div
+                        key={match.id}
+                        className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg border text-sm"
+                      >
+                        {pending ? (
+                          <>
+                            <div className="flex-1 text-sm text-gray-500 italic">
+                              {match.note ?? "TBD vs TBD"}
+                            </div>
+                            {match.date && (
+                              <span className="text-xs text-gray-400 shrink-0">
+                                {new Date(match.date).toLocaleDateString("en-US", {
+                                  month: "short", day: "numeric",
+                                })}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex-1 flex items-center gap-2 justify-end">
+                              <span className={`font-medium ${match.winner === "TEAM1" ? "text-green-700 font-semibold" : "text-gray-700"}`}>
+                                {match.team1.name}
+                              </span>
+                              <span className="text-xl">{match.team1.flagEmoji}</span>
+                            </div>
+                            <div className="text-center w-20 shrink-0">
+                              {match.winner === "UPCOMING" ? (
+                                <span className="text-xs text-gray-400">
+                                  {match.date
+                                    ? new Date(match.date).toLocaleDateString("en-US", {
+                                        month: "short", day: "numeric",
+                                      })
+                                    : "TBD"}
+                                </span>
+                              ) : (
+                                <span className="font-mono font-bold text-base">
+                                  {match.team1Goals} – {match.team2Goals}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex-1 flex items-center gap-2">
+                              <span className="text-xl">{match.team2.flagEmoji}</span>
+                              <span className={`font-medium ${match.winner === "TEAM2" ? "text-green-700 font-semibold" : "text-gray-700"}`}>
+                                {match.team2.name}
+                              </span>
+                            </div>
+                            <div className="shrink-0 w-16 text-right">
+                              {match.winner === "DRAW" && (
+                                <Badge variant="secondary" className="text-xs">Draw</Badge>
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
 
       {/* Ranking rules */}
       <Card>
