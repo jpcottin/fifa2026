@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { rawDaysUntil } from "@/lib/countdown";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +20,10 @@ export default async function HomePage({
   const isPreparing = gameState?.state === "PREPARING";
 
   const totalSelections = await prisma.selection.count();
-  const totalPlayers = await prisma.user.count({ where: { role: "PLAYER" } });
+  const totalPlayers = await prisma.user.count();
+
+  const daysToKickoff = rawDaysUntil(new Date("2026-06-11"));
+  const daysToFinal = rawDaysUntil(new Date("2026-07-19"));
 
   return (
     <div className="space-y-8">
@@ -54,12 +58,26 @@ export default async function HomePage({
           <CardContent><p className="text-3xl font-bold text-green-700">{totalSelections}</p></CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Teams</CardTitle></CardHeader>
-          <CardContent><p className="text-3xl font-bold text-green-700">48</p></CardContent>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Countdown to Kickoff</CardTitle></CardHeader>
+          <CardContent>
+            {daysToKickoff > 0 ? (
+              <p className="text-3xl font-bold text-green-700">({daysToKickoff} day{daysToKickoff !== 1 ? "s" : ""})</p>
+            ) : daysToKickoff === 0 ? (
+              <p className="text-3xl font-bold text-green-700">(0 day)</p>
+            ) : (
+              <p className="text-base font-semibold text-gray-500 text-center py-2">Competition ongoing</p>
+            )}
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Sets</CardTitle></CardHeader>
-          <CardContent><p className="text-3xl font-bold text-green-700">8</p></CardContent>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Countdown to the Final</CardTitle></CardHeader>
+          <CardContent>
+            {daysToFinal > 0 ? (
+              <p className="text-3xl font-bold text-green-700">({daysToFinal} day{daysToFinal !== 1 ? "s" : ""})</p>
+            ) : (
+              <p className="text-base font-semibold text-gray-500 text-center py-2">Done!</p>
+            )}
+          </CardContent>
         </Card>
       </div>
 
