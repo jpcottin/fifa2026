@@ -57,6 +57,7 @@ export default async function MatchesPage() {
         <p className="text-gray-500 text-center py-8">No matches recorded yet.</p>
       )}
 
+      {/* ── Match list by phase ───────────────────────────────────────────── */}
       {phaseOrder
         .filter((p) => byPhase[p])
         .map((phase) => (
@@ -129,6 +130,7 @@ export default async function MatchesPage() {
             </div>
           </div>
         ))}
+
     </div>
   );
 }

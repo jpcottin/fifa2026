@@ -20,7 +20,7 @@ export default async function HomePage({
   const isPreparing = gameState?.state === "PREPARING";
 
   const totalSelections = await prisma.selection.count();
-  const totalPlayers = await prisma.user.count();
+  const totalPlayers = await prisma.user.count({ where: { selections: { some: {} } } });
 
   const daysToKickoff = rawDaysUntil(new Date("2026-06-11"));
   const daysToFinal = rawDaysUntil(new Date("2026-07-19"));
@@ -61,9 +61,9 @@ export default async function HomePage({
           <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Countdown to Kickoff</CardTitle></CardHeader>
           <CardContent>
             {daysToKickoff > 0 ? (
-              <p className="text-3xl font-bold text-green-700">({daysToKickoff} day{daysToKickoff !== 1 ? "s" : ""})</p>
+              <p className="text-3xl font-bold text-green-700">{daysToKickoff} day{daysToKickoff !== 1 ? "s" : ""}</p>
             ) : daysToKickoff === 0 ? (
-              <p className="text-3xl font-bold text-green-700">(0 day)</p>
+              <p className="text-3xl font-bold text-green-700">0 days</p>
             ) : (
               <p className="text-base font-semibold text-gray-500 text-center py-2">Competition ongoing</p>
             )}
@@ -73,7 +73,7 @@ export default async function HomePage({
           <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Countdown to the Final</CardTitle></CardHeader>
           <CardContent>
             {daysToFinal > 0 ? (
-              <p className="text-3xl font-bold text-green-700">({daysToFinal} day{daysToFinal !== 1 ? "s" : ""})</p>
+              <p className="text-3xl font-bold text-green-700">{daysToFinal} day{daysToFinal !== 1 ? "s" : ""}</p>
             ) : (
               <p className="text-base font-semibold text-gray-500 text-center py-2">Done!</p>
             )}

@@ -1,7 +1,9 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { splitMatchCounts } from "@/lib/match-stats";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteSelectionButton } from "@/components/DeleteSelectionButton";
 import Link from "next/link";
 import { SELECTION_DEADLINE } from "@/lib/constants";
@@ -18,7 +20,7 @@ export default async function LeaderboardPage({
   const params = await searchParams;
   const mineOnly = params.mine === "1";
 
-  const [selections, teams, gameState] = await Promise.all([
+  const [selections, teams, gameState, matchWinners] = await Promise.all([
     prisma.selection.findMany({
       where: mineOnly && session?.user?.id ? { userId: session.user.id } : {},
       include: { user: { select: { name: true, image: true } } },
@@ -26,7 +28,12 @@ export default async function LeaderboardPage({
     }),
     prisma.team.findMany(),
     prisma.gameState.findUnique({ where: { id: "singleton" } }),
+    prisma.match.findMany({ select: { winner: true } }),
   ]);
+
+  const { played: playedCount, upcoming: upcomingCount } = splitMatchCounts(
+    matchWinners.map((m) => m.winner),
+  );
 
   const teamMap = new Map(teams.map((t) => [t.id, t]));
   const isPreparing = gameState?.state === "PREPARING";
@@ -54,6 +61,17 @@ export default async function LeaderboardPage({
             <Link href="/leaderboard">All</Link>
           </Button>
         </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Matches Played</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold text-green-700">{playedCount}</p></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-gray-500">Matches to Go</CardTitle></CardHeader>
+          <CardContent><p className="text-3xl font-bold text-gray-400">{upcomingCount}</p></CardContent>
+        </Card>
       </div>
 
       {canShowCountdown && <Countdown deadlineMs={SELECTION_DEADLINE.getTime()} />}
