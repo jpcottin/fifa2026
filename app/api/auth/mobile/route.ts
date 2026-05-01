@@ -21,6 +21,10 @@ export async function POST(req: Request) {
   }
   const googlePayload = await googleRes.json();
 
+  if (googlePayload.aud !== process.env.GOOGLE_CLIENT_ID) {
+    return NextResponse.json({ error: "Invalid token audience" }, { status: 401 });
+  }
+
   const { email, name, picture, sub: googleId } = googlePayload;
   if (!email) {
     return NextResponse.json({ error: "Google token missing email" }, { status: 401 });

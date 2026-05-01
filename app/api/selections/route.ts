@@ -8,7 +8,7 @@ export async function GET(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const selections = await prisma.selection.findMany({
-    include: { user: { select: { name: true, email: true, image: true } } },
+    include: { user: { select: { name: true, image: true } } },
     orderBy: [{ score: "desc" }, { createdAt: "asc" }],
   });
 
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   if (new Date() >= SELECTION_DEADLINE) {
-    return NextResponse.json({ error: "The selection deadline (June 10) has passed" }, { status: 403 });
+    return NextResponse.json({ error: "The selection deadline (June 11) has passed" }, { status: 403 });
   }
 
   const gameState = await prisma.gameState.findUnique({ where: { id: "singleton" } });

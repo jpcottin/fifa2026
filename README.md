@@ -29,7 +29,7 @@ npm run dev
 - 48 qualified nations split into **8 sets of 6** by April 2026 FIFA ranking
 - Each player picks **1 team per set** → 8-team combo, up to **3 selections**
 - Selections are **final once submitted** — they cannot be changed or deleted
-- Selections close on **June 10, 2026** and are locked when the admin starts the tournament
+- Selections close on **June 11, 2026 at 19:00 UTC** and are locked when the admin starts the tournament
 - **Scoring**: Win +3 · Draw +1 · Goal +0.3 (group) · Goal +0.5 (knockout)
 - Selection score = sum of all 8 teams' individual scores
 
@@ -156,11 +156,11 @@ Delete a match and recalculate all scores.
 ### Selections
 
 #### `GET /api/selections`
-Returns all selections with user info (name, email, image), ordered by score.
+Returns all selections with user info (name, image), ordered by score.
 
 #### `POST /api/selections`
 Create a selection. Enforces:
-- Deadline not passed (June 10, 2026)
+- Deadline not passed (June 11, 2026 19:00 UTC)
 - Game state is `PREPARING`
 - User has fewer than 3 selections
 - Exactly 8 team IDs, one from each set (1–8)
