@@ -115,7 +115,18 @@ Auth.js internals for the Google OAuth flow. Not accessed directly by the applic
 
 ## REST API
 
-All endpoints require authentication via session cookie (web) or `Authorization: Bearer <token>` (mobile app). Endpoints marked **Admin** additionally require the `ADMIN` role.
+All endpoints require authentication via session cookie (web) or `Authorization: Bearer <token>` (mobile app), except `GET /api/stats` which is public. Endpoints marked **Admin** additionally require the `ADMIN` role.
+
+### Stats
+
+#### `GET /api/stats`
+Public. Returns player and selection counts for the home screen.
+
+```json
+{ "totalPlayers": 12, "totalSelections": 27 }
+```
+
+---
 
 ### Teams
 
