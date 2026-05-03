@@ -20,7 +20,7 @@ interface NavbarProps {
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/teams", label: "Teams" },
+  { href: "/teams", label: "Sets" },
   { href: "/matches", label: "Matches" },
   { href: "/wc-results", label: "WC Results" },
 ];

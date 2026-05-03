@@ -13,7 +13,7 @@ export default async function TeamsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-green-800">Team Scores</h1>
+      <h1 className="text-2xl font-bold text-green-800">For your selections, pick one team per set. Here are all 8 sets and their current scores.</h1>
 
       {SETS.map((s) => {
         const setTeams = teams.filter((t) => t.set === s.set);
