@@ -27,6 +27,9 @@ export default async function EditMatchPage({ params }: { params: Promise<{ id: 
           team1Goals: match.team1Goals,
           team2Goals: match.team2Goals,
           note: match.note ?? "",
+          extraTime: match.extraTime,
+          pkTeam1Goals: match.pkTeam1Goals,
+          pkTeam2Goals: match.pkTeam2Goals,
         }}
       />
     </div>

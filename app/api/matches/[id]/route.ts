@@ -25,6 +25,9 @@ export async function PATCH(
   if (body.team1Goals !== undefined) updateData.team1Goals = body.team1Goals;
   if (body.team2Goals !== undefined) updateData.team2Goals = body.team2Goals;
   if (body.note !== undefined) updateData.note = body.note;
+  if (body.extraTime !== undefined) updateData.extraTime = body.extraTime;
+  if (body.pkTeam1Goals !== undefined) updateData.pkTeam1Goals = body.pkTeam1Goals;
+  if (body.pkTeam2Goals !== undefined) updateData.pkTeam2Goals = body.pkTeam2Goals;
 
   const match = await prisma.match.update({
     where: { id },

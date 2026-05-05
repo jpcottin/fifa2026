@@ -91,6 +91,9 @@ export default async function WcResultsPage() {
       winner: m.winner as string,
       date: m.date?.toISOString() ?? null,
       note: m.note ?? null,
+      extraTime: m.extraTime,
+      pkTeam1Goals: m.pkTeam1Goals,
+      pkTeam2Goals: m.pkTeam2Goals,
     }));
 
   return (

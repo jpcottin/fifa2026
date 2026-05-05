@@ -89,9 +89,18 @@ export default async function MatchesPage() {
                               {match.date ? new Date(match.date).toLocaleDateString() : "TBD"}
                             </span>
                           ) : (
-                            <span className="font-mono font-bold text-lg">
-                              {match.team1Goals} – {match.team2Goals}
-                            </span>
+                            <div className="flex flex-col items-center leading-tight">
+                              <span className="font-mono font-bold text-lg">
+                                {match.team1Goals} – {match.team2Goals}
+                              </span>
+                              {match.extraTime && (
+                                <span className="text-[11px] text-gray-400 italic">
+                                  {match.pkTeam1Goals != null && match.pkTeam2Goals != null
+                                    ? `e.t. · p.k. ${match.pkTeam1Goals}–${match.pkTeam2Goals}`
+                                    : "e.t."}
+                                </span>
+                              )}
+                            </div>
                           )}
                         </div>
                         <div className="flex-1 flex items-center gap-2">
