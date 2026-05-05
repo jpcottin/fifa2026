@@ -12,6 +12,9 @@ export type BracketMatch = {
   winner: string;
   date: string | null;
   note: string | null;
+  extraTime?: boolean;
+  pkTeam1Goals?: number | null;
+  pkTeam2Goals?: number | null;
 };
 
 // ── Layout constants ──────────────────────────────────────────────────────────
@@ -170,6 +173,14 @@ function BracketCard({ match }: { match: BracketMatch | null }) {
           </span>
         )}
       </div>
+      {/* ET / PK annotation */}
+      {!upcoming && match.extraTime && (
+        <div className="text-center text-[9px] text-gray-400 italic leading-none mt-0.5">
+          {match.pkTeam1Goals != null && match.pkTeam2Goals != null
+            ? `e.t. · p.k. ${match.pkTeam1Goals}–${match.pkTeam2Goals}`
+            : "e.t."}
+        </div>
+      )}
     </div>
   );
 }

@@ -19,6 +19,9 @@ interface MatchData {
   team1Goals: number;
   team2Goals: number;
   note?: string;
+  extraTime?: boolean;
+  pkTeam1Goals?: number | null;
+  pkTeam2Goals?: number | null;
 }
 
 const PHASES = [
@@ -51,6 +54,9 @@ export function MatchForm({ teams, match }: { teams: Team[]; match?: MatchData }
     team1Goals: match?.team1Goals ?? 0,
     team2Goals: match?.team2Goals ?? 0,
     note: match?.note ?? "",
+    extraTime: match?.extraTime ?? false,
+    pkTeam1Goals: match?.pkTeam1Goals ?? null,
+    pkTeam2Goals: match?.pkTeam2Goals ?? null,
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -142,6 +148,50 @@ export function MatchForm({ teams, match }: { teams: Team[]; match?: MatchData }
                 <Label>Team 2 Goals</Label>
                 <Input type="number" min={0} value={form.team2Goals} onChange={set("team2Goals")} />
               </div>
+            </div>
+          )}
+
+          {form.winner !== "UPCOMING" && form.phase !== "GROUP" && (
+            <div className="space-y-3 border-t pt-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.extraTime ?? false}
+                  onChange={(e) => setForm((f) => ({
+                    ...f,
+                    extraTime: e.target.checked,
+                    pkTeam1Goals: e.target.checked ? f.pkTeam1Goals : null,
+                    pkTeam2Goals: e.target.checked ? f.pkTeam2Goals : null,
+                  }))}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm font-medium">Extra time played</span>
+              </label>
+
+              {form.extraTime && form.winner === "DRAW" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label>PK Goals (Team 1)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={form.pkTeam1Goals ?? ""}
+                      onChange={(e) => setForm((f) => ({ ...f, pkTeam1Goals: e.target.value === "" ? null : Number(e.target.value) }))}
+                      placeholder="e.g. 5"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>PK Goals (Team 2)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={form.pkTeam2Goals ?? ""}
+                      onChange={(e) => setForm((f) => ({ ...f, pkTeam2Goals: e.target.value === "" ? null : Number(e.target.value) }))}
+                      placeholder="e.g. 4"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
