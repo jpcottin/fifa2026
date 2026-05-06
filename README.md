@@ -32,6 +32,7 @@ npm run dev
 - Selections close on **June 11, 2026 at 19:00 UTC** and are locked when the admin starts the tournament
 - **Scoring**: Win +3 · Draw +1 · Goal +0.3 (group) · Goal +0.5 (knockout)
 - Selection score = sum of all 8 teams' individual scores
+- Extra time and penalty shootouts do not change the scoring outcome — only regular-time goals and the match result (win/draw/loss) count
 
 ## NPM Scripts
 
@@ -44,6 +45,24 @@ npm run dev
 | `npm run db:seed-matches` | Seed 72 group stage matches |
 | `npm run db:seed-knockout` | Seed 32 knockout matches (TBD teams) |
 | `npm run db:make-admin <email>` | Promote a user to Admin |
+
+## Auto-advance
+
+After every `PATCH /api/matches/:id` call, `autoAdvanceKnockout()` runs automatically and fills in knockout match slots as soon as their prerequisites are resolved:
+
+- **R32 winner/runner-up slots** (8 of 16): filled when both referenced groups have played all 6 matches.
+- **R32 3rd-place slots** (8 of 16): require the FIFA assignment table — filled manually by the admin after all groups complete.
+- **R16 → QF → SF → Final / 3rd place**: filled as each upstream knockout match gets a result.
+
+Slots are identified by their `note` field. New match records are created automatically (with `winner = UPCOMING`) when both teams can be resolved; existing UPCOMING records are updated if the teams change.
+
+Auto-advance never overwrites a match that already has a result (`winner ≠ UPCOMING`) or has `teamsLocked = true`. Setting `teamsLocked` happens automatically when an admin explicitly patches team IDs via `PATCH /api/matches/:id`.
+
+## Tests
+
+```bash
+npm test   # runs Vitest — 55 unit tests covering rankGroup, advancer, eliminated, resolveSpec, SLOTS, NOTE_BY_NUM
+```
 
 ## Roles
 
@@ -88,7 +107,10 @@ One row per fixture, group stage and knockout.
 | `phase` | `GROUP` \| `R32` \| `R16` \| `QF` \| `SF` \| `THIRD` \| `FINAL` | |
 | `winner` | `UPCOMING` \| `TEAM1` \| `TEAM2` \| `DRAW` | Default: `UPCOMING` |
 | `team1Goals`, `team2Goals` | Int | Default: 0 |
-| `note` | String? | Human-readable description for TBD knockout matchups (e.g. "Runner-up Group A vs Runner-up Group B") |
+| `extraTime` | Boolean | `true` when the knockout match went to extra time; default `false` |
+| `pkTeam1Goals`, `pkTeam2Goals` | Int? | Penalty shootout goals (set when `extraTime = true` and `winner = DRAW`; the team with more PK goals advances) |
+| `note` | String? | Human-readable description for TBD knockout matchups (e.g. "Runner-up Group A vs Runner-up Group B"); also used by auto-advance to identify slots |
+| `teamsLocked` | Boolean | When `true`, auto-advance will not overwrite `team1Id`/`team2Id`. Set automatically when an admin explicitly patches team IDs; reset with `{ "teamsLocked": false }` |
 
 ### `Selection`
 A player's 8-team combo. Immutable once submitted.
@@ -153,10 +175,20 @@ Create a match.
 ```
 
 #### `PATCH /api/matches/:id` — **Admin**
-Update any subset of match fields. Triggers a full score recalculation for all teams and selections.
+Update any subset of match fields. Triggers a full score recalculation for all teams and selections, then runs **auto-advance**: knockout slots whose prerequisites are now resolved (group complete, or upstream match has a result) are automatically created or updated with the correct teams.
 
+Extra time and penalty shootout fields:
 ```json
-{ "winner": "TEAM1", "team1Goals": 2, "team2Goals": 0 }
+{ "winner": "TEAM1", "team1Goals": 2, "team2Goals": 1, "extraTime": true }
+{ "winner": "DRAW",  "team1Goals": 1, "team2Goals": 1, "extraTime": true,
+  "pkTeam1Goals": 5, "pkTeam2Goals": 3 }
+```
+
+For PK games `winner` stays `DRAW`; the team with more PK goals is treated as the advancer by auto-advance and by the bracket display.
+
+Manually overriding teams on an UPCOMING knockout match (patching `team1Id` or `team2Id`) automatically sets `teamsLocked = true`, preventing auto-advance from overwriting the change. To hand control back to auto-advance:
+```json
+{ "teamsLocked": false }
 ```
 
 #### `DELETE /api/matches/:id` — **Admin**

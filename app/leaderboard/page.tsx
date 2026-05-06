@@ -41,11 +41,14 @@ export default async function LeaderboardPage({
   const isPastDeadline = new Date() >= SELECTION_DEADLINE;
   const canShowCountdown = mineOnly && isPreparing && !isPastDeadline && selections.length < 3;
 
-  let rank = 1;
-  const ranked = selections.map((sel, idx) => {
-    if (idx > 0 && sel.score < selections[idx - 1].score) rank = idx + 1;
-    return { ...sel, rank };
-  });
+  const ranked = selections.reduce<(typeof selections[number] & { rank: number })[]>(
+    (acc, sel, idx) => {
+      const prev = acc[idx - 1];
+      const rank = prev === undefined ? 1 : sel.score < prev.score ? idx + 1 : prev.rank;
+      return [...acc, { ...sel, rank }];
+    },
+    []
+  );
 
   return (
     <div className="space-y-4">
