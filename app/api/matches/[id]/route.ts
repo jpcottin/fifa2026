@@ -3,6 +3,7 @@ import { getAuth } from "@/lib/mobile-auth";
 import { prisma } from "@/lib/db";
 import { Phase, MatchResult } from "@/app/generated/prisma/enums";
 import { recalculateAllScores } from "@/lib/scoring";
+import { autoAdvanceKnockout } from "@/lib/auto-advance";
 
 export async function PATCH(
   req: Request,
@@ -36,6 +37,7 @@ export async function PATCH(
   });
 
   await recalculateAllScores();
+  await autoAdvanceKnockout().catch(err => console.error("autoAdvanceKnockout failed:", err));
 
   return NextResponse.json(match);
 }
