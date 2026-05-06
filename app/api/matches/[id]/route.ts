@@ -17,7 +17,19 @@ export async function PATCH(
   const { id } = await params;
   const body = await req.json();
   
-  const updateData: any = {};
+  const updateData: {
+    team1Id?: string;
+    team2Id?: string;
+    date?: Date | null;
+    phase?: Phase;
+    winner?: MatchResult;
+    team1Goals?: number;
+    team2Goals?: number;
+    note?: string;
+    extraTime?: boolean;
+    pkTeam1Goals?: number | null;
+    pkTeam2Goals?: number | null;
+  } = {};
   if (body.team1Id !== undefined) updateData.team1Id = body.team1Id;
   if (body.team2Id !== undefined) updateData.team2Id = body.team2Id;
   if (body.date !== undefined) updateData.date = body.date ? new Date(body.date) : null;
