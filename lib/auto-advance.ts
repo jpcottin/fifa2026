@@ -49,6 +49,7 @@ export async function autoAdvanceKnockout(): Promise<void> {
 
     if (existing) {
       if (existing.winner !== MatchResult.UPCOMING) continue;
+      if (existing.teamsLocked) continue;
       if (existing.team1Id === team1Id && existing.team2Id === team2Id) continue;
       await prisma.match.update({ where: { id: existing.id }, data: { team1Id, team2Id } });
     } else {

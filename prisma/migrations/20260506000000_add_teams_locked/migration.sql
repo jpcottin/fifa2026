@@ -1,0 +1,1 @@
+ALTER TABLE "Match" ADD COLUMN "teamsLocked" BOOLEAN NOT NULL DEFAULT false;

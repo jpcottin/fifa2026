@@ -86,8 +86,9 @@ model Match {
   winner     MatchResult @default(UPCOMING)
   team1Goals Int         @default(0)
   team2Goals Int         @default(0)
-  note       String?
-  extraTime  Boolean     @default(false)
+  note         String?
+  extraTime    Boolean     @default(false)
+  teamsLocked  Boolean     @default(false)
   pkTeam1Goals Int?
   pkTeam2Goals Int?
   createdAt  DateTime    @default(now())
