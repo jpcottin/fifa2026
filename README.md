@@ -56,6 +56,8 @@ After every `PATCH /api/matches/:id` call, `autoAdvanceKnockout()` runs automati
 
 Slots are identified by their `note` field. New match records are created automatically (with `winner = UPCOMING`) when both teams can be resolved; existing UPCOMING records are updated if the teams change.
 
+Auto-advance never overwrites a match that already has a result (`winner ≠ UPCOMING`) or has `teamsLocked = true`. Setting `teamsLocked` happens automatically when an admin explicitly patches team IDs via `PATCH /api/matches/:id`.
+
 ## Tests
 
 ```bash
@@ -108,6 +110,7 @@ One row per fixture, group stage and knockout.
 | `extraTime` | Boolean | `true` when the knockout match went to extra time; default `false` |
 | `pkTeam1Goals`, `pkTeam2Goals` | Int? | Penalty shootout goals (set when `extraTime = true` and `winner = DRAW`; the team with more PK goals advances) |
 | `note` | String? | Human-readable description for TBD knockout matchups (e.g. "Runner-up Group A vs Runner-up Group B"); also used by auto-advance to identify slots |
+| `teamsLocked` | Boolean | When `true`, auto-advance will not overwrite `team1Id`/`team2Id`. Set automatically when an admin explicitly patches team IDs; reset with `{ "teamsLocked": false }` |
 
 ### `Selection`
 A player's 8-team combo. Immutable once submitted.
@@ -182,6 +185,11 @@ Extra time and penalty shootout fields:
 ```
 
 For PK games `winner` stays `DRAW`; the team with more PK goals is treated as the advancer by auto-advance and by the bracket display.
+
+Manually overriding teams on an UPCOMING knockout match (patching `team1Id` or `team2Id`) automatically sets `teamsLocked = true`, preventing auto-advance from overwriting the change. To hand control back to auto-advance:
+```json
+{ "teamsLocked": false }
+```
 
 #### `DELETE /api/matches/:id` — **Admin**
 Delete a match and recalculate all scores.
