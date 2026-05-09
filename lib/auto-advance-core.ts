@@ -19,31 +19,31 @@ export const WC_GROUPS = [
 // ── Knockout notes in FIFA match order ──────────────────────────────────────
 // R32 = matches 73-88, R16 = 89-96, QF = 97-100, SF = 101-102
 export const R32_NOTES = [
-  "Winner Group E vs 3rd Place Group A/B/C/D/F",       // 73
-  "Winner Group I vs 3rd Place Group C/D/F/G/H",       // 74
-  "Runner-up Group A vs Runner-up Group B",             // 75
-  "Winner Group F vs Runner-up Group C",                // 76
-  "Runner-up Group K vs Runner-up Group L",             // 77
-  "Winner Group H vs Runner-up Group J",                // 78
-  "Winner Group D vs 3rd Place Group B/E/F/I/J",       // 79
-  "Winner Group G vs 3rd Place Group A/E/H/I/J",       // 80
-  "Winner Group C vs Runner-up Group F",                // 81
-  "Runner-up Group E vs Runner-up Group I",             // 82
-  "Winner Group A vs 3rd Place Group C/E/F/H/I",       // 83
-  "Winner Group L vs 3rd Place Group E/H/I/J/K",       // 84
-  "Winner Group J vs Runner-up Group H",                // 85
-  "Runner-up Group D vs Runner-up Group G",             // 86
-  "Winner Group B vs 3rd Place Group E/F/G/I/J",       // 87
-  "Winner Group K vs 3rd Place Group D/E/I/J/L",       // 88
+  "Runner-up Group A vs Runner-up Group B",             // 73
+  "Winner Group E vs 3rd Place Group A/B/C/D/F",       // 74
+  "Winner Group F vs Runner-up Group C",                // 75
+  "Winner Group C vs Runner-up Group F",                // 76
+  "Winner Group I vs 3rd Place Group C/D/F/G/H",       // 77
+  "Runner-up Group E vs Runner-up Group I",             // 78
+  "Winner Group A vs 3rd Place Group C/E/F/H/I",       // 79
+  "Winner Group L vs 3rd Place Group E/H/I/J/K",       // 80
+  "Winner Group D vs 3rd Place Group B/E/F/I/J",       // 81
+  "Winner Group G vs 3rd Place Group A/E/H/I/J",       // 82
+  "Runner-up Group K vs Runner-up Group L",             // 83
+  "Winner Group H vs Runner-up Group J",                // 84
+  "Winner Group B vs 3rd Place Group E/F/G/I/J",       // 85
+  "Winner Group J vs Runner-up Group H",                // 86
+  "Winner Group K vs 3rd Place Group D/E/I/J/L",       // 87
+  "Runner-up Group D vs Runner-up Group G",             // 88
 ];
 
 export const R16_NOTES = [
   "Winner Match 74 vs Winner Match 77",   // 89
   "Winner Match 73 vs Winner Match 75",   // 90
-  "Winner Match 83 vs Winner Match 84",   // 91
-  "Winner Match 81 vs Winner Match 82",   // 92
-  "Winner Match 76 vs Winner Match 78",   // 93
-  "Winner Match 79 vs Winner Match 80",   // 94
+  "Winner Match 76 vs Winner Match 78",   // 91
+  "Winner Match 79 vs Winner Match 80",   // 92
+  "Winner Match 83 vs Winner Match 84",   // 93
+  "Winner Match 81 vs Winner Match 82",   // 94
   "Winner Match 86 vs Winner Match 88",   // 95
   "Winner Match 85 vs Winner Match 87",   // 96
 ];

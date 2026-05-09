@@ -149,22 +149,22 @@ describe("resolveSpec — group refs", () => {
 
 // ── resolveSpec — match refs ─────────────────────────────────────────────────
 describe("resolveSpec — match refs", () => {
-  // Match 75 → NOTE_BY_NUM[75] = R32_NOTES[2] = "Runner-up Group A vs Runner-up Group B"
-  const r32note75 = NOTE_BY_NUM[75];
+  // Match 73 → NOTE_BY_NUM[73] = R32_NOTES[0] = "Runner-up Group A vs Runner-up Group B"
+  const r32note73 = NOTE_BY_NUM[73];
 
-  it("resolves Winner Match 75 to the winner of that R32 match", () => {
-    const matchByNote = new Map([[r32note75, snap("ru_a", "ru_b", MatchResult.TEAM1, 2, 1)]]);
-    expect(resolveSpec("Winner Match 75", EMPTY_GROUP_IDS, EMPTY_GROUP_MATCHES, matchByNote)).toBe("ru_a");
+  it("resolves Winner Match 73 to the winner of that R32 match", () => {
+    const matchByNote = new Map([[r32note73, snap("ru_a", "ru_b", MatchResult.TEAM1, 2, 1)]]);
+    expect(resolveSpec("Winner Match 73", EMPTY_GROUP_IDS, EMPTY_GROUP_MATCHES, matchByNote)).toBe("ru_a");
   });
 
-  it("resolves Winner Match 75 to team2 when TEAM2 wins", () => {
-    const matchByNote = new Map([[r32note75, snap("ru_a", "ru_b", MatchResult.TEAM2, 0, 1)]]);
-    expect(resolveSpec("Winner Match 75", EMPTY_GROUP_IDS, EMPTY_GROUP_MATCHES, matchByNote)).toBe("ru_b");
+  it("resolves Winner Match 73 to team2 when TEAM2 wins", () => {
+    const matchByNote = new Map([[r32note73, snap("ru_a", "ru_b", MatchResult.TEAM2, 0, 1)]]);
+    expect(resolveSpec("Winner Match 73", EMPTY_GROUP_IDS, EMPTY_GROUP_MATCHES, matchByNote)).toBe("ru_b");
   });
 
   it("returns null when the referenced match is still UPCOMING", () => {
-    const matchByNote = new Map([[r32note75, snap("ru_a", "ru_b", MatchResult.UPCOMING)]]);
-    expect(resolveSpec("Winner Match 75", EMPTY_GROUP_IDS, EMPTY_GROUP_MATCHES, matchByNote)).toBeNull();
+    const matchByNote = new Map([[r32note73, snap("ru_a", "ru_b", MatchResult.UPCOMING)]]);
+    expect(resolveSpec("Winner Match 73", EMPTY_GROUP_IDS, EMPTY_GROUP_MATCHES, matchByNote)).toBeNull();
   });
 
   it("returns null for an unrecognised match number", () => {
@@ -180,8 +180,8 @@ describe("resolveSpec — match refs", () => {
   });
 
   it("resolves Winner Match via PK draw", () => {
-    const matchByNote = new Map([[r32note75, snap("ru_a", "ru_b", MatchResult.DRAW, 1, 1, 5, 3)]]);
-    expect(resolveSpec("Winner Match 75", EMPTY_GROUP_IDS, EMPTY_GROUP_MATCHES, matchByNote)).toBe("ru_a");
+    const matchByNote = new Map([[r32note73, snap("ru_a", "ru_b", MatchResult.DRAW, 1, 1, 5, 3)]]);
+    expect(resolveSpec("Winner Match 73", EMPTY_GROUP_IDS, EMPTY_GROUP_MATCHES, matchByNote)).toBe("ru_a");
   });
 });
 
@@ -216,8 +216,20 @@ describe("SLOTS", () => {
 
 // ── NOTE_BY_NUM sanity ────────────────────────────────────────────────────────
 describe("NOTE_BY_NUM", () => {
-  it("match 75 maps to the Runner-up A vs Runner-up B R32 note", () => {
-    expect(NOTE_BY_NUM[75]).toBe(R32_NOTES[2]);
+  it("match 73 maps to Runner-up Group A vs Runner-up Group B", () => {
+    expect(NOTE_BY_NUM[73]).toBe("Runner-up Group A vs Runner-up Group B");
+  });
+  it("match 74 maps to Winner Group E vs 3rd Place Group A/B/C/D/F", () => {
+    expect(NOTE_BY_NUM[74]).toBe("Winner Group E vs 3rd Place Group A/B/C/D/F");
+  });
+  it("match 83 maps to Runner-up Group K vs Runner-up Group L", () => {
+    expect(NOTE_BY_NUM[83]).toBe("Runner-up Group K vs Runner-up Group L");
+  });
+  it("match 91 maps to Winner Match 76 vs Winner Match 78", () => {
+    expect(NOTE_BY_NUM[91]).toBe("Winner Match 76 vs Winner Match 78");
+  });
+  it("match 93 maps to Winner Match 83 vs Winner Match 84", () => {
+    expect(NOTE_BY_NUM[93]).toBe("Winner Match 83 vs Winner Match 84");
   });
 
   it("covers all expected match numbers (73-102)", () => {
