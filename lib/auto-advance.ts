@@ -1,6 +1,6 @@
 import { prisma } from "./db";
 import { Phase, MatchResult } from "@/app/generated/prisma/enums";
-import { WC_GROUPS, SLOTS, resolveSpec, type MatchSnap } from "./auto-advance-core";
+import { WC_GROUPS, SLOTS, PARTIAL_R32_SLOTS, resolveSpec, type MatchSnap } from "./auto-advance-core";
 
 export async function autoAdvanceKnockout(): Promise<void> {
   const [allMatches, allTeams] = await Promise.all([
@@ -61,5 +61,17 @@ export async function autoAdvanceKnockout(): Promise<void> {
         },
       });
     }
+  }
+
+  // Partial fill: update team1 of "Winner Group X vs 3rd Place …" R32 matches
+  // as soon as the group winner is known. team2 stays TBD until admin sets it.
+  for (const slot of PARTIAL_R32_SLOTS) {
+    const team1Id = resolveSpec(slot.spec1, groupTeamIds, groupMatches, matchByNote);
+    if (!team1Id) continue;
+
+    const existing = allMatches.find(m => m.note === slot.note && m.phase === Phase.R32);
+    if (!existing || existing.teamsLocked || existing.winner !== MatchResult.UPCOMING) continue;
+    if (existing.team1Id === team1Id) continue;
+    await prisma.match.update({ where: { id: existing.id }, data: { team1Id } });
   }
 }
