@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { shortNote } from "@/lib/bracket-utils";
 
 type TeamInfo = { name: string; flagEmoji: string };
 export type BracketMatch = {
@@ -91,14 +92,6 @@ const BRACKET_NOTES: Record<RoundKey, string[]> = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function shortNote(note: string): string {
-  return note
-    .replace(/Winner Group ([A-L])/g,   (_, g) => `${g}1`)
-    .replace(/Runner-up Group ([A-L])/g, (_, g) => `${g}2`)
-    .replace(/3rd Place Group [A-L/]+/g, "3rd")
-    .replace(/Winner Match (\d+)/g,      (_, n) => `W${n}`)
-    .replace(/Loser Match (\d+)/g,       (_, n) => `L${n}`);
-}
 
 function fmtDate(d: string | null): string {
   if (!d) return "TBD";
@@ -120,9 +113,11 @@ function BracketCard({ match }: { match: BracketMatch | null }) {
     );
   }
 
-  const tbd = isTbd(match.team1.name) || isTbd(match.team2.name);
+  const tbd1 = isTbd(match.team1.name);
+  const tbd2 = isTbd(match.team2.name);
 
-  if (tbd) {
+  // Both teams unknown: show note text only
+  if (tbd1 && tbd2) {
     return (
       <div
         style={{ width: CARD_W, height: CARD_H, borderColor: LINE_COLOR }}
@@ -136,6 +131,11 @@ function BracketCard({ match }: { match: BracketMatch | null }) {
     );
   }
 
+  // For a partial-TBD side, derive label from note spec (e.g. "3rd C/D/F/G/H")
+  const noteParts = match.note?.split(" vs ") ?? [];
+  const t1Label = tbd1 ? shortNote(noteParts[0] ?? "") : match.team1.name;
+  const t2Label = tbd2 ? shortNote(noteParts[1] ?? "") : match.team2.name;
+
   const w1 = match.winner === "TEAM1";
   const w2 = match.winner === "TEAM2";
   const upcoming = match.winner === "UPCOMING";
@@ -147,11 +147,13 @@ function BracketCard({ match }: { match: BracketMatch | null }) {
     >
       {/* Team 1 */}
       <div className="flex items-center gap-1 min-w-0">
-        <span className="text-xs shrink-0">{match.team1.flagEmoji}</span>
-        <span className={`text-[11px] flex-1 truncate ${w1 ? "text-green-700 font-semibold" : "text-gray-700"}`}>
-          {match.team1.name}
+        {!tbd1 && <span className="text-xs shrink-0">{match.team1.flagEmoji}</span>}
+        <span className={`text-[11px] flex-1 truncate ${
+          tbd1 ? "italic text-gray-400" : w1 ? "text-green-700 font-semibold" : "text-gray-700"
+        }`}>
+          {t1Label}
         </span>
-        {!upcoming && (
+        {!upcoming && !tbd1 && (
           <span className={`text-[11px] font-mono font-bold shrink-0 ${w1 ? "text-green-700" : "text-gray-500"}`}>
             {match.team1Goals}
           </span>
@@ -163,11 +165,13 @@ function BracketCard({ match }: { match: BracketMatch | null }) {
       )}
       {/* Team 2 */}
       <div className="flex items-center gap-1 min-w-0">
-        <span className="text-xs shrink-0">{match.team2.flagEmoji}</span>
-        <span className={`text-[11px] flex-1 truncate ${w2 ? "text-green-700 font-semibold" : "text-gray-700"}`}>
-          {match.team2.name}
+        {!tbd2 && <span className="text-xs shrink-0">{match.team2.flagEmoji}</span>}
+        <span className={`text-[11px] flex-1 truncate ${
+          tbd2 ? "italic text-gray-400" : w2 ? "text-green-700 font-semibold" : "text-gray-700"
+        }`}>
+          {t2Label}
         </span>
-        {!upcoming && (
+        {!upcoming && !tbd2 && (
           <span className={`text-[11px] font-mono font-bold shrink-0 ${w2 ? "text-green-700" : "text-gray-500"}`}>
             {match.team2Goals}
           </span>

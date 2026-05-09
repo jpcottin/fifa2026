@@ -83,13 +83,20 @@ export type MatchSnap = {
 
 export type Slot = { note: string; phase: Phase; spec1: string; spec2: string };
 
-// ── Slot definitions (skip 3rd-place R32 slots — admin fills those) ──────────
+// ── Slot definitions ─────────────────────────────────────────────────────────
+// Full slots: both teams can be resolved automatically.
+// Partial slots: only team1 (the group winner) is auto-resolvable; team2 is a
+// 3rd-place team determined by admin after all groups finish.
 export const SLOTS: Slot[] = [];
+export const PARTIAL_R32_SLOTS: Slot[] = []; // "Winner Group X vs 3rd Place …"
 
 for (const note of R32_NOTES) {
   const [spec1, spec2] = note.split(" vs ");
-  if (spec1.includes("3rd") || spec2.includes("3rd")) continue;
-  SLOTS.push({ note, phase: Phase.R32, spec1, spec2 });
+  if (spec1.includes("3rd") || spec2.includes("3rd")) {
+    PARTIAL_R32_SLOTS.push({ note, phase: Phase.R32, spec1, spec2 });
+  } else {
+    SLOTS.push({ note, phase: Phase.R32, spec1, spec2 });
+  }
 }
 for (const note of R16_NOTES) {
   const [spec1, spec2] = note.split(" vs ");

@@ -51,17 +51,28 @@ npm run dev
 After every `PATCH /api/matches/:id` call, `autoAdvanceKnockout()` runs automatically and fills in knockout match slots as soon as their prerequisites are resolved:
 
 - **R32 winner/runner-up slots** (8 of 16): filled when both referenced groups have played all 6 matches.
-- **R32 3rd-place slots** (8 of 16): require the FIFA assignment table — filled manually by the admin after all groups complete.
+- **R32 3rd-place slots** (8 of 16): `team1` (the group winner) is filled automatically as soon as that group completes. `team2` (the 3rd-place qualifier from a cross-group pool, e.g. "best 3rd of C/D/F/G/H") requires the official FIFA assignment table and must be set manually by the admin after all groups finish.
 - **R16 → QF → SF → Final / 3rd place**: filled as each upstream knockout match gets a result.
 
 Slots are identified by their `note` field. New match records are created automatically (with `winner = UPCOMING`) when both teams can be resolved; existing UPCOMING records are updated if the teams change.
 
 Auto-advance never overwrites a match that already has a result (`winner ≠ UPCOMING`) or has `teamsLocked = true`. Setting `teamsLocked` happens automatically when an admin explicitly patches team IDs via `PATCH /api/matches/:id`.
 
+### Bracket display for partial-TBD slots
+
+Once `team1` is filled but `team2` is still the TBD placeholder, the bracket shows the known team normally (with flag) and renders the pending side as its seeding spec in italic — for example:
+
+```
+🇫🇷 France
+3rd C/D/F/G/H   ← italic, filled by admin after groups finish
+```
+
+This applies to both the web bracket (`/wc-results`) and the Android app. Once the admin sets `team2` and the team's name no longer starts with "TBD", both sides render normally.
+
 ## Tests
 
 ```bash
-npm test   # runs Vitest — 55 unit tests covering rankGroup, advancer, eliminated, resolveSpec, SLOTS, NOTE_BY_NUM
+npm test   # runs Vitest — 67 unit tests covering rankGroup, advancer, eliminated, resolveSpec, SLOTS, NOTE_BY_NUM, shortNote
 ```
 
 ## Roles
