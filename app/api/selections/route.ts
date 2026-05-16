@@ -7,7 +7,11 @@ export async function GET(req: Request) {
   const session = await getAuth(req);
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { searchParams } = new URL(req.url);
+  const leagueId = searchParams.get("leagueId") ?? undefined;
+
   const selections = await prisma.selection.findMany({
+    where: leagueId ? { leagueId } : undefined,
     include: { user: { select: { name: true, image: true } } },
     orderBy: [{ score: "desc" }, { createdAt: "asc" }],
   });
