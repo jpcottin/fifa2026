@@ -14,19 +14,19 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  const leagueName = session?.user?.id
+  const leagues = session?.user?.id
     ? await prisma.user
         .findUnique({
           where: { id: session.user.id },
-          include: { league: { select: { name: true } } },
+          include: { leagues: { select: { name: true, slug: true, id: true } } },
         })
-        .then((u) => u?.league?.name ?? null)
-    : null;
+        .then((u) => u?.leagues ?? [])
+    : [];
 
   return (
     <html lang="en" className={`${geist.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-gray-50">
-        <Navbar session={session} leagueName={leagueName} />
+        <Navbar session={session} leagues={leagues} />
         <main className="flex-1 container mx-auto px-4 py-6 max-w-5xl">{children}</main>
         <footer className="text-center text-xs text-gray-400 py-4">
           FIFA 2026 · Pick Your 8

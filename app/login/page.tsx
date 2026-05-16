@@ -1,8 +1,16 @@
 import { signIn } from "@/lib/auth";
+import { sanitizeCallbackUrl } from "@/lib/league-access";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const params = await searchParams;
+  const callbackUrl = sanitizeCallbackUrl(params.callbackUrl);
+
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <Card className="w-full max-w-sm">
@@ -15,7 +23,7 @@ export default function LoginPage() {
           <form
             action={async () => {
               "use server";
-              await signIn("google", { redirectTo: "/" });
+              await signIn("google", { redirectTo: callbackUrl });
             }}
           >
             <Button type="submit" className="w-full" size="lg">

@@ -13,13 +13,19 @@ export async function PATCH(
   }
   const { id } = await params;
   const body = await req.json();
-  const data: { role?: Role; leagueId?: string | null } = {};
+
+  const leaguesUpdate: { connect?: { id: string }; disconnect?: { id: string } } = {};
+  if (body.addLeagueId) leaguesUpdate.connect = { id: body.addLeagueId };
+  if (body.removeLeagueId) leaguesUpdate.disconnect = { id: body.removeLeagueId };
+
+  const data: { role?: Role; leagues?: typeof leaguesUpdate } = {};
   if (body.role !== undefined) data.role = body.role as Role;
-  if (body.leagueId !== undefined) data.leagueId = body.leagueId;
+  if (body.addLeagueId || body.removeLeagueId) data.leagues = leaguesUpdate;
+
   const user = await prisma.user.update({
     where: { id },
     data,
-    select: { id: true, name: true, email: true, role: true, leagueId: true },
+    select: { id: true, name: true, email: true, role: true, leagues: { select: { id: true, name: true, slug: true } } },
   });
   return NextResponse.json(user);
 }

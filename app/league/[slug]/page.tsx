@@ -24,19 +24,16 @@ export default async function LeaguePage({
 
   if (!league) notFound();
 
-  const user = session?.user?.id
-    ? await prisma.user.findUnique({
-        where: { id: session.user.id },
-        include: { league: { select: { name: true, slug: true } } },
-      })
-    : null;
-
   const isAdmin = session?.user?.role === "ADMIN";
-  const isInThisLeague = user?.leagueId === league.id;
-  const isInOtherLeague = user?.leagueId && user.leagueId !== league.id;
 
-  if (isInThisLeague && !isAdmin) {
-    redirect("/leaderboard");
+  const isMember = session?.user?.id
+    ? !!(await prisma.user.findFirst({
+        where: { id: session.user.id, leagues: { some: { id: league.id } } },
+      }))
+    : false;
+
+  if (isMember && !isAdmin) {
+    redirect(`/leaderboard?league=${league.id}`);
   }
 
   return (
@@ -53,13 +50,7 @@ export default async function LeaguePage({
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-base text-center">
-            {isAdmin
-              ? "Admin view"
-              : !session
-              ? "Sign in to join"
-              : isInOtherLeague
-              ? "Already in a league"
-              : "Join this league"}
+            {isAdmin ? "Admin view" : !session ? "Sign in to join" : "Join this league"}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
@@ -71,6 +62,8 @@ export default async function LeaguePage({
               <Button asChild variant="outline" className="w-full">
                 <Link href="/admin/leagues">Manage leagues</Link>
               </Button>
+              <hr className="my-1" />
+              <JoinLeagueButton slug={slug} leagueName={league.name} leagueId={league.id} />
             </div>
           )}
 
@@ -80,15 +73,8 @@ export default async function LeaguePage({
             </Button>
           )}
 
-          {!isAdmin && session && isInOtherLeague && (
-            <p className="text-sm text-center text-gray-600">
-              You are already in the <strong>{user.league?.name}</strong> league. Contact the admin
-              to be moved to <strong>{league.name}</strong>.
-            </p>
-          )}
-
-          {!isAdmin && session && !isInOtherLeague && (
-            <JoinLeagueButton slug={slug} leagueName={league.name} />
+          {!isAdmin && session && (
+            <JoinLeagueButton slug={slug} leagueName={league.name} leagueId={league.id} />
           )}
         </CardContent>
       </Card>

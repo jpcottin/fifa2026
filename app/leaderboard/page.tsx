@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getActiveLeagueId, isNoLeaguePlayer } from "@/lib/league-access";
 import { splitMatchCounts } from "@/lib/match-stats";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,17 +26,18 @@ export default async function LeaderboardPage({
   const currentUser = session?.user?.id
     ? await prisma.user.findUnique({
         where: { id: session.user.id },
-        include: { league: { select: { id: true, name: true, slug: true } } },
+        include: { leagues: { select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } } },
       })
     : null;
 
-  const allLeagues = isAdmin
-    ? await prisma.league.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } })
-    : [];
+  const userLeagues = currentUser?.leagues ?? [];
 
-  const activeLeagueId: string | undefined = isAdmin
-    ? (params.league ?? currentUser?.leagueId ?? undefined)
-    : (currentUser?.leagueId ?? undefined);
+  const visibleLeagues = isAdmin
+    ? await prisma.league.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } })
+    : userLeagues;
+
+  const activeLeagueId = getActiveLeagueId(params.league, userLeagues, isAdmin);
+  const noLeaguePlayer = isNoLeaguePlayer(userLeagues, isAdmin);
 
   const activeLeague = activeLeagueId
     ? await prisma.league.findUnique({ where: { id: activeLeagueId }, select: { id: true, name: true, slug: true } })
@@ -47,11 +49,13 @@ export default async function LeaderboardPage({
   };
 
   const [selections, teams, gameState, matchWinners] = await Promise.all([
-    prisma.selection.findMany({
-      where: selectionWhere,
-      include: { user: { select: { name: true, image: true } } },
-      orderBy: [{ score: "desc" }, { createdAt: "asc" }],
-    }),
+    noLeaguePlayer
+      ? Promise.resolve([] as Awaited<ReturnType<typeof prisma.selection.findMany<{ include: { user: { select: { name: true; image: true } } } }>>>)
+      : prisma.selection.findMany({
+          where: selectionWhere,
+          include: { user: { select: { name: true, image: true } } },
+          orderBy: [{ score: "desc" }, { createdAt: "asc" }],
+        }),
     prisma.team.findMany(),
     prisma.gameState.findUnique({ where: { id: "singleton" } }),
     prisma.match.findMany({ select: { winner: true } }),
@@ -85,15 +89,15 @@ export default async function LeaderboardPage({
           {!mineOnly && activeLeague && (
             <p className="text-xs text-gray-500">League leaderboard</p>
           )}
-          {!currentUser?.leagueId && !isAdmin && session && (
+          {userLeagues.length === 0 && !isAdmin && session && (
             <p className="text-sm text-gray-500 mt-1">
-              <Link href="/admin/leagues" className="text-green-700 underline">Join a league</Link> to see your leaderboard.
+              Join a league to see its leaderboard.
             </p>
           )}
         </div>
         <div className="flex gap-2 flex-wrap">
-          {isAdmin && allLeagues.length > 0 && (
-            <LeagueFilter leagues={allLeagues} activeLeagueId={activeLeagueId} />
+          {visibleLeagues.length > 0 && (
+            <LeagueFilter leagues={visibleLeagues} activeLeagueId={activeLeagueId} />
           )}
           <Button asChild variant={mineOnly ? "default" : "outline"} size="sm">
             <Link href={activeLeagueId && isAdmin ? `/leaderboard?mine=1&league=${activeLeagueId}` : "/leaderboard?mine=1"}>
@@ -164,10 +168,12 @@ export default async function LeaderboardPage({
         </div>
       )}
 
-      {isPreparing && !isPastDeadline && (
+      {isPreparing && !isPastDeadline && !noLeaguePlayer && (
         <div className="text-center pt-4">
           <Button asChild className="bg-green-700 hover:bg-green-800">
-            <Link href="/selections/new">+ New Selection</Link>
+            <Link href={activeLeagueId ? `/selections/new?league=${activeLeagueId}` : "/selections/new"}>
+              + New Selection
+            </Link>
           </Button>
         </div>
       )}

@@ -10,8 +10,8 @@ export default async function UsersPage() {
     prisma.user.findMany({
       select: {
         id: true, name: true, email: true, image: true,
-        role: true, createdAt: true, leagueId: true,
-        league: { select: { name: true, slug: true } },
+        role: true, createdAt: true,
+        leagues: { select: { id: true, name: true, slug: true } },
       },
       orderBy: { createdAt: "asc" },
     }),

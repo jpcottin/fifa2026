@@ -15,12 +15,21 @@ interface Team {
   flagEmoji: string;
 }
 
-interface Props {
-  teams: Team[];
+interface League {
+  id: string;
+  name: string;
+  slug: string;
 }
 
-export function NewSelectionForm({ teams }: Props) {
+interface Props {
+  teams: Team[];
+  leagues: League[];
+  defaultLeagueId: string;
+}
+
+export function NewSelectionForm({ teams, leagues, defaultLeagueId }: Props) {
   const router = useRouter();
+  const [leagueId, setLeagueId] = useState(defaultLeagueId);
   const [name, setName] = useState("");
   const [picks, setPicks] = useState<Record<number, string>>(() => {
     const initial: Record<number, string> = {};
@@ -44,7 +53,7 @@ export function NewSelectionForm({ teams }: Props) {
     const res = await fetch("/api/selections", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name.trim(), teamIds }),
+      body: JSON.stringify({ name: name.trim(), teamIds, leagueId }),
     });
     setLoading(false);
 
@@ -53,12 +62,25 @@ export function NewSelectionForm({ teams }: Props) {
       setError(data.error ?? "Failed to save selection");
       return;
     }
-    router.push("/leaderboard");
+    router.push(`/leaderboard?league=${leagueId}`);
     router.refresh();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="league">League</Label>
+        <select
+          id="league"
+          value={leagueId}
+          onChange={(e) => setLeagueId(e.target.value)}
+          className="w-full border rounded-md px-3 py-2 text-sm bg-white"
+        >
+          {leagues.map((l) => (
+            <option key={l.id} value={l.id}>{l.name}</option>
+          ))}
+        </select>
+      </div>
       <div className="space-y-2">
         <Label htmlFor="name">Selection Name</Label>
         <Input

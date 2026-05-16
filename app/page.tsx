@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getHomeStatsScope } from "@/lib/league-access";
 import { rawDaysUntil } from "@/lib/countdown";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -16,11 +17,31 @@ export default async function HomePage({
   const session = await auth();
   const params = await searchParams;
   const showLockedNotice = params.locked === "1";
+  const isAdmin = session?.user?.role === "ADMIN";
   const gameState = await prisma.gameState.findUnique({ where: { id: "singleton" } });
   const isPreparing = gameState?.state === "PREPARING";
 
-  const totalSelections = await prisma.selection.count();
-  const totalPlayers = await prisma.user.count({ where: { selections: { some: {} } } });
+  const rawLeagueIds: string[] = session?.user?.id && !isAdmin
+    ? ((await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { leagues: { select: { id: true } } },
+      }))?.leagues.map((l) => l.id) ?? [])
+    : [];
+  // null → admin/guest (global totals); string[] → player (league-scoped, may be empty)
+  const userLeagueIds = getHomeStatsScope(session?.user?.id, isAdmin, rawLeagueIds);
+
+  const [totalSelections, totalPlayers] = await Promise.all([
+    userLeagueIds === null
+      ? prisma.selection.count()
+      : userLeagueIds.length === 0
+        ? Promise.resolve(0)
+        : prisma.selection.count({ where: { leagueId: { in: userLeagueIds } } }),
+    userLeagueIds === null
+      ? prisma.user.count({ where: { selections: { some: {} } } })
+      : userLeagueIds.length === 0
+        ? Promise.resolve(0)
+        : prisma.user.count({ where: { selections: { some: { leagueId: { in: userLeagueIds } } } } }),
+  ]);
 
   const daysToKickoff = rawDaysUntil(new Date("2026-06-11"));
   const daysToFinal = rawDaysUntil(new Date("2026-07-19"));
@@ -43,7 +64,9 @@ export default async function HomePage({
       {isPreparing && (
         <div className="flex justify-center">
           <Button asChild size="lg" className="bg-green-700 hover:bg-green-800">
-            <Link href="/selections/new">Pick My 8 Teams →</Link>
+            <Link href={userLeagueIds?.length ? `/selections/new?league=${userLeagueIds[0]}` : "/selections/new"}>
+              Pick My 8 Teams →
+            </Link>
           </Button>
         </div>
       )}

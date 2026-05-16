@@ -28,16 +28,37 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Selections are locked" }, { status: 403 });
   }
 
-  const count = await prisma.selection.count({ where: { userId: session.user.id } });
-  if (count >= 3) {
-    return NextResponse.json({ error: "Maximum 3 selections allowed" }, { status: 400 });
-  }
-
   const body = await req.json();
-  const { name, teamIds } = body as { name: string; teamIds: string[] };
+  const { name, teamIds, leagueId } = body as { name: string; teamIds: string[]; leagueId: string };
 
   if (!name?.trim() || teamIds?.length !== 8) {
     return NextResponse.json({ error: "Invalid selection data" }, { status: 400 });
+  }
+
+  if (!leagueId) {
+    return NextResponse.json({ error: "You must select a league" }, { status: 400 });
+  }
+
+  const isAdmin = session.user.role === "ADMIN";
+
+  const league = await prisma.league.findUnique({ where: { id: leagueId } });
+  if (!league) {
+    return NextResponse.json({ error: "League not found" }, { status: 404 });
+  }
+
+  if (!isAdmin) {
+    const membership = await prisma.league.findFirst({
+      where: { id: leagueId, users: { some: { id: session.user.id } } },
+    });
+    if (!membership) {
+      return NextResponse.json({ error: "You are not a member of this league" }, { status: 403 });
+    }
+  }
+
+  // Enforce max 3 selections per league
+  const count = await prisma.selection.count({ where: { userId: session.user.id, leagueId } });
+  if (count >= 3) {
+    return NextResponse.json({ error: "Maximum 3 selections allowed per league" }, { status: 400 });
   }
 
   const teams = await prisma.team.findMany({ where: { id: { in: teamIds } } });
@@ -46,16 +67,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Must pick exactly one team per set" }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { leagueId: true },
-  });
-  if (!user?.leagueId) {
-    return NextResponse.json({ error: "You must join a league before making a selection" }, { status: 400 });
-  }
-
   const selection = await prisma.selection.create({
-    data: { name: name.trim(), userId: session.user.id, teamIds, leagueId: user.leagueId },
+    data: { name: name.trim(), userId: session.user.id, teamIds, leagueId },
   });
   return NextResponse.json(selection, { status: 201 });
 }

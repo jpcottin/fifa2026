@@ -12,7 +12,7 @@ model League {
   name       String
   slug       String      @unique
   createdAt  DateTime    @default(now())
-  users      User[]
+  users      User[]      @relation("UserLeagues")
   selections Selection[]
 }
 
@@ -23,13 +23,12 @@ model User {
   emailVerified DateTime?
   image         String?
   role          Role        @default(PLAYER)
-  leagueId      String?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   accounts      Account[]
   sessions      Session[]
   selections    Selection[]
-  league        League?     @relation(fields: [leagueId], references: [id])
+  leagues       League[]    @relation("UserLeagues")
 }
 
 model Account {
