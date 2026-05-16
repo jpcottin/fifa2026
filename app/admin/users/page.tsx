@@ -6,15 +6,22 @@ export const dynamic = "force-dynamic";
 
 export default async function UsersPage() {
   const session = await auth();
-  const users = await prisma.user.findMany({
-    select: { id: true, name: true, email: true, image: true, role: true, createdAt: true },
-    orderBy: { createdAt: "asc" },
-  });
+  const [users, leagues] = await Promise.all([
+    prisma.user.findMany({
+      select: {
+        id: true, name: true, email: true, image: true,
+        role: true, createdAt: true, leagueId: true,
+        league: { select: { name: true, slug: true } },
+      },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.league.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } }),
+  ]);
 
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-green-800">Users</h1>
-      <UserTable users={users} currentUserId={session!.user.id} />
+      <UserTable users={users} currentUserId={session!.user.id} leagues={leagues} />
     </div>
   );
 }

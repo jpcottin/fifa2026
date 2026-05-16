@@ -13,19 +13,34 @@ interface User {
   image: string | null;
   role: string;
   createdAt: Date;
+  leagueId: string | null;
+  league: { name: string; slug: string } | null;
 }
 
-export function UserTable({ users, currentUserId }: { users: User[]; currentUserId: string }) {
+interface League {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export function UserTable({
+  users,
+  currentUserId,
+  leagues,
+}: {
+  users: User[];
+  currentUserId: string;
+  leagues: League[];
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
 
-  const toggleRole = async (id: string, role: string) => {
+  const patch = async (id: string, body: object) => {
     setLoading(id);
-    const next = role === "ADMIN" ? "PLAYER" : "ADMIN";
     await fetch(`/api/admin/users/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role: next }),
+      body: JSON.stringify(body),
     });
     setLoading(null);
     router.refresh();
@@ -42,7 +57,7 @@ export function UserTable({ users, currentUserId }: { users: User[]; currentUser
   return (
     <div className="space-y-2">
       {users.map((user) => (
-        <div key={user.id} className="flex items-center gap-3 p-3 bg-white rounded-lg border">
+        <div key={user.id} className="flex items-center gap-3 p-3 bg-white rounded-lg border flex-wrap">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.image ?? ""} alt={user.name ?? ""} />
             <AvatarFallback>{user.name?.[0]?.toUpperCase() ?? "U"}</AvatarFallback>
@@ -54,12 +69,30 @@ export function UserTable({ users, currentUserId }: { users: User[]; currentUser
           <Badge variant={user.role === "ADMIN" ? "default" : "secondary"}>
             {user.role}
           </Badge>
+          <Badge variant="outline" className="text-xs">
+            {user.league ? user.league.name : "No league"}
+          </Badge>
           {user.id !== currentUserId && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <select
+                className="text-xs border rounded px-1 py-1 bg-white"
+                value={user.leagueId ?? ""}
+                disabled={loading === user.id}
+                onChange={(e) =>
+                  patch(user.id, { leagueId: e.target.value || null })
+                }
+              >
+                <option value="">No league</option>
+                {leagues.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => toggleRole(user.id, user.role)}
+                onClick={() => patch(user.id, { role: user.role === "ADMIN" ? "PLAYER" : "ADMIN" })}
                 disabled={loading === user.id}
               >
                 {user.role === "ADMIN" ? "Make Player" : "Make Admin"}

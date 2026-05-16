@@ -34,6 +34,17 @@ npm run dev
 - Selection score = sum of all 8 teams' individual scores
 - Extra time and penalty shootouts do not change the scoring outcome — only regular-time goals and the match result (win/draw/loss) count
 
+## Leagues
+
+The app supports multiple isolated groups of players competing on separate leaderboards — called **leagues**.
+
+- The **admin** creates leagues from `/admin/leagues` (e.g. "OTV" → `/league/otv`, "LetsPlay" → `/league/letsplay`)
+- The admin copies the invite URL and shares it with each group
+- Players visit their league URL, sign in with Google, and are automatically enrolled
+- Each player belongs to **one league** — the admin can reassign them from `/admin/users`
+- The leaderboard is scoped to the player's league; admins can filter across all leagues
+- **Match results are entered once** by the admin and instantly affect scoring in all leagues
+
 ## NPM Scripts
 
 | Script | Description |
@@ -41,9 +52,10 @@ npm run dev
 | `npm run dev` | Start dev server |
 | `npm run build` | Production build |
 | `npm test` | Run unit tests |
-| `npm run db:seed` | Seed 48 teams + game state |
+| `npm run db:seed` | Seed 48 teams + game state + default league |
 | `npm run db:seed-matches` | Seed 72 group stage matches |
 | `npm run db:seed-knockout` | Seed 32 knockout matches (TBD teams) |
+| `npm run db:seed-leagues` | Seed sample OTV and LetsPlay leagues (local dev) |
 | `npm run db:make-admin <email>` | Promote a user to Admin |
 
 ## Auto-advance
@@ -72,7 +84,7 @@ This applies to both the web bracket (`/wc-results`) and the Android app. Once t
 ## Tests
 
 ```bash
-npm test   # runs Vitest — 67 unit tests covering rankGroup, advancer, eliminated, resolveSpec, SLOTS, NOTE_BY_NUM, shortNote
+npm test   # runs Vitest — 83 unit tests covering rankGroup, advancer, eliminated, resolveSpec, SLOTS, NOTE_BY_NUM, shortNote, normalizeSlug, isValidSlug
 ```
 
 ## Roles
@@ -95,6 +107,7 @@ Created automatically on first Google sign-in.
 | `email` | String | Unique |
 | `name`, `image` | String? | From Google profile |
 | `role` | `PLAYER` \| `ADMIN` | Default: `PLAYER` |
+| `leagueId` | String? | FK → League; null for admins without a league |
 
 ### `Team`
 48 qualified nations + 2 TBD placeholders for knockout fixtures.
@@ -123,6 +136,16 @@ One row per fixture, group stage and knockout.
 | `note` | String? | Human-readable description for TBD knockout matchups (e.g. "Runner-up Group A vs Runner-up Group B"); also used by auto-advance to identify slots |
 | `teamsLocked` | Boolean | When `true`, auto-advance will not overwrite `team1Id`/`team2Id`. Set automatically when an admin explicitly patches team IDs; reset with `{ "teamsLocked": false }` |
 
+### `League`
+A named group of players competing on a shared leaderboard.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | String (cuid) | PK |
+| `name` | String | Display name (e.g. "OTV") |
+| `slug` | String | Unique URL key (e.g. "otv") — used at `/league/:slug` |
+| `createdAt` | DateTime | |
+
 ### `Selection`
 A player's 8-team combo. Immutable once submitted.
 
@@ -130,6 +153,7 @@ A player's 8-team combo. Immutable once submitted.
 |---|---|---|
 | `id` | String (cuid) | PK |
 | `userId` | String | FK → User |
+| `leagueId` | String | FK → League |
 | `name` | String | Player-chosen label |
 | `teamIds` | String[] | Exactly 8 team IDs, one per set |
 | `score` | Float | Recalculated after every match result |
@@ -228,6 +252,26 @@ Delete a selection. Regular players cannot delete their own selections once subm
 
 ---
 
+### Leagues
+
+#### `GET /api/leagues` — **Admin**
+Returns all leagues with member counts.
+
+#### `POST /api/leagues` — **Admin**
+Create a league. Slug is auto-generated from the name if omitted.
+
+```json
+{ "name": "OTV", "slug": "otv" }
+```
+
+#### `GET /api/leagues/:slug`
+Public. Returns the league name and slug (used by the join page).
+
+#### `POST /api/leagues/:slug/join`
+Authenticated. Enroll the current user in this league. Returns 400 if the user is already in a different league.
+
+---
+
 ### Game State
 
 #### `GET /api/game-state`
@@ -252,10 +296,12 @@ Switch game state to lock selections and start the tournament.
 Returns all users (id, name, email, image, role, createdAt).
 
 #### `PATCH /api/admin/users/:id` — **Admin**
-Change a user's role.
+Change a user's role and/or league.
 
 ```json
 { "role": "ADMIN" }
+{ "leagueId": "<league-id>" }
+{ "leagueId": null }
 ```
 
 #### `DELETE /api/admin/users/:id` — **Admin**

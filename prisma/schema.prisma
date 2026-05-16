@@ -7,6 +7,15 @@ datasource db {
   provider = "postgresql"
 }
 
+model League {
+  id         String      @id @default(cuid())
+  name       String
+  slug       String      @unique
+  createdAt  DateTime    @default(now())
+  users      User[]
+  selections Selection[]
+}
+
 model User {
   id            String      @id @default(cuid())
   name          String?
@@ -14,11 +23,13 @@ model User {
   emailVerified DateTime?
   image         String?
   role          Role        @default(PLAYER)
+  leagueId      String?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   accounts      Account[]
   sessions      Session[]
   selections    Selection[]
+  league        League?     @relation(fields: [leagueId], references: [id])
 }
 
 model Account {
@@ -71,10 +82,12 @@ model Selection {
   id        String   @id @default(cuid())
   name      String
   userId    String
+  leagueId  String
   teamIds   String[]
   score     Float    @default(0)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  league    League   @relation(fields: [leagueId], references: [id])
 }
 
 model Match {

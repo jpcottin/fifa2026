@@ -56,6 +56,9 @@ export default async function AdminPage() {
             <Button asChild variant="outline">
               <Link href="/admin/users">Manage Users</Link>
             </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/leagues">Manage Leagues</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

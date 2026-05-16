@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteSelectionButton } from "@/components/DeleteSelectionButton";
+import { LeagueFilter } from "@/components/LeagueFilter";
 import Link from "next/link";
 import { SELECTION_DEADLINE } from "@/lib/constants";
 import { Countdown } from "@/components/Countdown";
@@ -14,15 +15,40 @@ export const dynamic = "force-dynamic";
 export default async function LeaderboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mine?: string }>;
+  searchParams: Promise<{ mine?: string; league?: string }>;
 }) {
   const session = await auth();
   const params = await searchParams;
   const mineOnly = params.mine === "1";
+  const isAdmin = session?.user?.role === "ADMIN";
+
+  const currentUser = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        include: { league: { select: { id: true, name: true, slug: true } } },
+      })
+    : null;
+
+  const allLeagues = isAdmin
+    ? await prisma.league.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } })
+    : [];
+
+  const activeLeagueId: string | undefined = isAdmin
+    ? (params.league ?? currentUser?.leagueId ?? undefined)
+    : (currentUser?.leagueId ?? undefined);
+
+  const activeLeague = activeLeagueId
+    ? await prisma.league.findUnique({ where: { id: activeLeagueId }, select: { id: true, name: true, slug: true } })
+    : null;
+
+  const selectionWhere = {
+    ...(mineOnly && session?.user?.id ? { userId: session.user.id } : {}),
+    ...(activeLeagueId ? { leagueId: activeLeagueId } : {}),
+  };
 
   const [selections, teams, gameState, matchWinners] = await Promise.all([
     prisma.selection.findMany({
-      where: mineOnly && session?.user?.id ? { userId: session.user.id } : {},
+      where: selectionWhere,
       include: { user: { select: { name: true, image: true } } },
       orderBy: [{ score: "desc" }, { createdAt: "asc" }],
     }),
@@ -37,7 +63,6 @@ export default async function LeaderboardPage({
 
   const teamMap = new Map(teams.map((t) => [t.id, t]));
   const isPreparing = gameState?.state === "PREPARING";
-  const isAdmin = session?.user?.role === "ADMIN";
   const isPastDeadline = new Date() >= SELECTION_DEADLINE;
   const canShowCountdown = mineOnly && isPreparing && !isPastDeadline && selections.length < 3;
 
@@ -52,16 +77,33 @@ export default async function LeaderboardPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-green-800">
-          {mineOnly ? "My Selections" : "Leaderboard"}
-        </h1>
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h1 className="text-2xl font-bold text-green-800">
+            {mineOnly ? "My Selections" : activeLeague ? activeLeague.name : "Leaderboard"}
+          </h1>
+          {!mineOnly && activeLeague && (
+            <p className="text-xs text-gray-500">League leaderboard</p>
+          )}
+          {!currentUser?.leagueId && !isAdmin && session && (
+            <p className="text-sm text-gray-500 mt-1">
+              <Link href="/admin/leagues" className="text-green-700 underline">Join a league</Link> to see your leaderboard.
+            </p>
+          )}
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {isAdmin && allLeagues.length > 0 && (
+            <LeagueFilter leagues={allLeagues} activeLeagueId={activeLeagueId} />
+          )}
           <Button asChild variant={mineOnly ? "default" : "outline"} size="sm">
-            <Link href="/leaderboard?mine=1">Mine</Link>
+            <Link href={activeLeagueId && isAdmin ? `/leaderboard?mine=1&league=${activeLeagueId}` : "/leaderboard?mine=1"}>
+              Mine
+            </Link>
           </Button>
           <Button asChild variant={mineOnly ? "outline" : "default"} size="sm">
-            <Link href="/leaderboard">All</Link>
+            <Link href={activeLeagueId && isAdmin ? `/leaderboard?league=${activeLeagueId}` : "/leaderboard"}>
+              All
+            </Link>
           </Button>
         </div>
       </div>

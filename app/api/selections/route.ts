@@ -46,8 +46,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Must pick exactly one team per set" }, { status: 400 });
   }
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { leagueId: true },
+  });
+  if (!user?.leagueId) {
+    return NextResponse.json({ error: "You must join a league before making a selection" }, { status: 400 });
+  }
+
   const selection = await prisma.selection.create({
-    data: { name: name.trim(), userId: session.user.id, teamIds },
+    data: { name: name.trim(), userId: session.user.id, teamIds, leagueId: user.leagueId },
   });
   return NextResponse.json(selection, { status: 201 });
 }

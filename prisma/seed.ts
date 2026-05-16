@@ -24,6 +24,13 @@ async function main() {
     create: { id: "singleton" },
   });
 
+  console.log("Seeding default league…");
+  await prisma.league.upsert({
+    where: { slug: "default" },
+    update: {},
+    create: { id: "default-league-id", name: "Default", slug: "default" },
+  });
+
   console.log("Done.");
 }
 

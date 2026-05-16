@@ -12,11 +12,14 @@ export async function PATCH(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { id } = await params;
-  const { role } = await req.json();
+  const body = await req.json();
+  const data: { role?: Role; leagueId?: string | null } = {};
+  if (body.role !== undefined) data.role = body.role as Role;
+  if (body.leagueId !== undefined) data.leagueId = body.leagueId;
   const user = await prisma.user.update({
     where: { id },
-    data: { role: role as Role },
-    select: { id: true, name: true, email: true, role: true },
+    data,
+    select: { id: true, name: true, email: true, role: true, leagueId: true },
   });
   return NextResponse.json(user);
 }

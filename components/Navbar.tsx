@@ -15,6 +15,7 @@ import { type Session } from "next-auth";
 
 interface NavbarProps {
   session: Session | null;
+  leagueName?: string | null;
 }
 
 const navLinks = [
@@ -25,7 +26,7 @@ const navLinks = [
   { href: "/wc-results", label: "WC Results" },
 ];
 
-export function Navbar({ session }: NavbarProps) {
+export function Navbar({ session, leagueName }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const isAdmin = session?.user?.role === "ADMIN";
@@ -72,6 +73,11 @@ export function Navbar({ session }: NavbarProps) {
                 </AvatarFallback>
               </Avatar>
               <span className="text-sm hidden md:block">{session.user.name}</span>
+              {leagueName && (
+                <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full hidden md:block">
+                  {leagueName}
+                </span>
+              )}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => router.push("/selections/new")}>
