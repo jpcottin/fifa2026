@@ -52,22 +52,24 @@ DATABASE_URL="postgresql://user:password@host:5432/fifa2026"
 ## 4. Option A – Local PostgreSQL with Docker
 
 ```bash
+# First time: create the container
 docker run --name fifa2026-db \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=postgres \
   -e POSTGRES_DB=fifa2026 \
   -p 5432:5432 \
   -d postgres:16
+
+# Subsequently: just start it
+docker start fifa2026-db
+
+# Verify it's running
+docker ps | grep fifa2026-db
 ```
 
 Use this `DATABASE_URL`:
 ```
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fifa2026"
-```
-
-To start the container again after a restart:
-```bash
-docker start fifa2026-db
 ```
 
 ## 4. Option B – Cloud database (Prisma Data Platform, Neon, Supabase…)
@@ -148,6 +150,24 @@ npx vitest run lib/__tests__/countdown.test.ts
 
 ```bash
 npx tsc --noEmit
+```
+
+---
+
+## 11. Deploy to Heroku (example)
+
+```bash
+# Push to GitHub + Heroku
+git push origin main && git push heroku main
+
+# Check what's pending before deploying
+git log heroku/main..main --oneline
+
+# Useful Heroku commands
+heroku logs --tail
+heroku ps
+heroku restart
+heroku run "npm run db:make-admin your@email.com"
 ```
 
 ---
