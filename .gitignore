@@ -47,5 +47,4 @@ next-env.d.ts
 # private docs
 DEPLOY.md
 CLAUDE.md
-SETUP.md
 AGENTS.md
