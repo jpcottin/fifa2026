@@ -20,7 +20,7 @@ npm install
 
 ## 2. Environment variables
 
-Create `.env.local` in the project root:
+Create an `.env` file in the project root:
 
 ```
 DATABASE_URL="postgresql://user:password@host:5432/fifa2026"
@@ -28,12 +28,6 @@ GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="your-client-secret"
 AUTH_SECRET="<run: openssl rand -base64 32>"
 NEXTAUTH_URL="http://localhost:3000"
-```
-
-Prisma CLI reads `.env` (not `.env.local`), so also create a `.env` file containing only:
-
-```
-DATABASE_URL="postgresql://user:password@host:5432/fifa2026"
 ```
 
 ---
@@ -74,7 +68,7 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fifa2026"
 
 ## 4. Option B – Cloud database (Prisma Data Platform, Neon, Supabase…)
 
-Copy the connection string from your cloud dashboard and use it as `DATABASE_URL` in both `.env` and `.env.local`.
+Copy the connection string from your cloud dashboard and use it as `DATABASE_URL` in `.env`.
 
 ---
 
@@ -92,6 +86,9 @@ npm run db:seed-matches
 
 # Seed knockout-stage placeholders
 npm run db:seed-knockout
+
+# Seed leagues
+npm run db:seed-leagues
 ```
 
 ---

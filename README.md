@@ -1,6 +1,6 @@
 # FIFA 2026 – Pick Your 8
 
-A World Cup 2026 prediction game. Players pick one team from each of 8 FIFA-ranking-based sets (6 teams per set, 48 teams total) and score points as their teams progress through the tournament.
+A World Cup 2026 prediction game. Players are invited to a league and create a selection by picking one team (i.e. country) from each of 8 FIFA-ranking-based sets (6 teams per set, 48 teams total) and score points as their selection's teams progress through the tournament.
 
 ## Stack
 
@@ -13,16 +13,6 @@ A World Cup 2026 prediction game. Players pick one team from each of 8 FIFA-rank
 ## Quick Start
 
 See [SETUP.md](./SETUP.md) for full instructions.
-
-```bash
-npm install
-# configure .env.local (see SETUP.md)
-npx prisma migrate dev --name init
-npm run db:seed
-npm run db:seed-matches
-npm run db:seed-knockout
-npm run dev
-```
 
 ## Game Rules
 
