@@ -17,11 +17,18 @@ export function DeleteSelectionButton({ id }: { id: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
     setLoading(true);
-    await fetch(`/api/selections/${id}`, { method: "DELETE" });
+    setError(null);
+    const res = await fetch(`/api/selections/${id}`, { method: "DELETE" });
     setLoading(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "Failed to delete selection");
+      return;
+    }
     setOpen(false);
     router.refresh();
   };
@@ -38,6 +45,7 @@ export function DeleteSelectionButton({ id }: { id: string }) {
           <DialogTitle>Delete Selection?</DialogTitle>
           <DialogDescription>This action cannot be undone.</DialogDescription>
         </DialogHeader>
+        {error && <p className="text-sm text-red-600">{error}</p>}
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
           <Button variant="destructive" onClick={handleDelete} disabled={loading}>
