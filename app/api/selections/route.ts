@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { name, teamIds, leagueId } = body as { name: string; teamIds: string[]; leagueId: string };
 
-  if (!name?.trim() || teamIds?.length !== 8) {
+  if (!name?.trim() || teamIds?.length !== 8 || new Set(teamIds).size !== 8) {
     return NextResponse.json({ error: "Invalid selection data" }, { status: 400 });
   }
 
