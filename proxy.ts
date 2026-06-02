@@ -8,7 +8,7 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
 
-  const publicPaths = ["/login", "/api/auth", "/league/", "/api/leagues/"];
+  const publicPaths = ["/login", "/api/auth", "/api/health", "/league/", "/api/leagues/"];
   const isPublic = publicPaths.some((p) => pathname.startsWith(p));
 
   // Allow mobile clients using Bearer token auth to reach API routes

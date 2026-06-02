@@ -25,8 +25,7 @@ export const authConfig: NextAuthConfig = {
       }
       return session;
     },
-    authorized({ auth, request }) {
-      if (request.nextUrl.pathname === "/api/health") return true;
+    authorized({ auth }) {
       return !!auth;
     },
   },
