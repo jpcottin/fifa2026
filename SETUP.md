@@ -100,6 +100,13 @@ npm run dev
 # → http://localhost:3000
 ```
 
+Verify the app and database are running:
+
+```bash
+curl http://localhost:3000/api/health
+# → {"status":"ok"}
+```
+
 ---
 
 ## 7. Make yourself admin (first time only)

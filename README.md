@@ -164,6 +164,17 @@ Auth.js internals for the Google OAuth flow. Not accessed directly by the applic
 
 All endpoints require authentication via session cookie (web) or `Authorization: Bearer <token>` (mobile app), except `GET /api/stats` which is public. Endpoints marked **Admin** additionally require the `ADMIN` role.
 
+### Health
+
+#### `GET /api/health`
+Public. Returns `{"status":"ok"}` and performs a lightweight `SELECT 1` database ping. Use this to verify the server and database are reachable (e.g. uptime monitoring).
+
+```json
+{ "status": "ok" }
+```
+
+---
+
 ### Stats
 
 #### `GET /api/stats`
