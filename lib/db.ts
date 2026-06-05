@@ -6,7 +6,8 @@ function createPrismaClient() {
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL!,
     ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-    keepAlive: true,  // detect dead connections before the OS TCP timeout fires
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10_000,
   });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
