@@ -74,7 +74,7 @@ This applies to both the web bracket (`/wc-results`) and the Android app. Once t
 ## Tests
 
 ```bash
-npm test   # runs Vitest — 83 unit tests covering rankGroup, advancer, eliminated, resolveSpec, SLOTS, NOTE_BY_NUM, shortNote, normalizeSlug, isValidSlug
+npm test   # runs Vitest — 110 unit tests: auto-advance (rankGroup, advancer, eliminated, resolveSpec, SLOTS, NOTE_BY_NUM), bracket display (shortNote), leagues (normalizeSlug, isValidSlug), league access (sanitizeCallbackUrl, getActiveLeagueId, isNoLeaguePlayer, getHomeStatsScope), scoring (goalMultiplier, computeTeamScores, computeSelectionScore), countdown (rawDaysUntil) and match stats (splitMatchCounts)
 ```
 
 ## Roles
